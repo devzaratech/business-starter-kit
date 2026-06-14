@@ -1,0 +1,56 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        type: choice
+        options:
+          - dev
+          - qa
+          - uat
+          - staging
+          - prod
+      image_tag:
+        description: Container image tag or Git SHA to deploy
+        required: true
+        default: latest
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate deployment inputs
+        run: |
+          test -n "${{ inputs.environment }}"
+          test -n "${{ inputs.image_tag }}"
+          echo "Deploying image tag '${{ inputs.image_tag }}' to '${{ inputs.environment }}'."
+
+      - name: Deploy through SSH
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          APP_DIR: ${{ secrets.APP_DIR }}
+          TARGET_ENV: ${{ inputs.environment }}
+          IMAGE_TAG: ${{ inputs.image_tag }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+          ssh "$SSH_USER@$SSH_HOST" "cd '$APP_DIR' && BUSINESS_STARTER_ENV='$TARGET_ENV' IMAGE_TAG='$IMAGE_TAG' ./scripts/deploy/restart-compose.sh '$TARGET_ENV'"

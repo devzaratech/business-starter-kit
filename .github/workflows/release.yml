@@ -1,0 +1,25 @@
+name: Release Candidate
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: read
+
+jobs:
+  release-candidate-validation:
+    name: Validate tagged release candidate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate compose configuration
+        run: docker compose -f infra/compose/docker-compose.staging.yml config
+
+      - name: Release candidate summary
+        run: |
+          echo "Tag: $GITHUB_REF_NAME"
+          echo "This workflow validates the release candidate before production deployment."

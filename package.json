@@ -4,12 +4,19 @@
   "private": true,
   "description": "Private, sanitized, modular and scalable SaaS foundation for business applications.",
   "workspaces": [
-    "apps/*",
-    "packages/*"
+    "apps/api-node",
+    "apps/web",
+    "apps/worker"
   ],
   "scripts": {
-    "dev:web": "npm --workspace apps/web run dev",
-    "dev:api-node": "npm --workspace apps/api-node run dev",
-    "dev:worker": "npm --workspace apps/worker run dev"
+    "test": "npm run test --workspaces --if-present",
+    "test:node": "npm --workspace @business-starter-kit/api-node run test",
+    "test:web": "npm --workspace @business-starter-kit/web run test",
+    "test:worker": "npm --workspace @business-starter-kit/worker run test",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

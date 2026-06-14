@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+      - release/**
+      - uat/**
+  push:
+    branches:
+      - main
+      - develop
+      - release/**
+      - uat/**
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  spring-api-tests:
+    name: Spring Boot API tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api-spring
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Run unit tests
+        run: mvn --batch-mode test
+
+  node-workspace-tests:
+    name: Node, worker and web tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run workspace tests
+        run: npm test
+
+      - name: Build workspace artifacts
+        run: npm run build --if-present
+
+  docker-compose-validation:
+    name: Docker Compose validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate VPS compose file
+        run: docker compose -f infra/compose/docker-compose.vps.yml config
+
+      - name: Validate environment compose files
+        run: |
+          for file in infra/compose/docker-compose.*.yml; do
+            echo "Validating $file"
+            docker compose -f "$file" config >/dev/null
+          done
+
+  quality-gate:
+    name: Quality gate
+    runs-on: ubuntu-latest
+    needs:
+      - spring-api-tests
+      - node-workspace-tests
+      - docker-compose-validation
+    steps:
+      - name: Mark quality gate as passed
+        run: echo "All required CI checks passed."

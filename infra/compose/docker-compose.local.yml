@@ -1,0 +1,9 @@
+name: business-starter-local
+
+# Environment-specific Compose overlay.
+# This file intentionally extends the lean VPS stack so every environment can
+# share the same service topology while using isolated configuration, databases,
+# buckets, domains and secrets.
+
+include:
+  - docker-compose.vps.yml

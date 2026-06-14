@@ -21,3 +21,14 @@ fix: correct storage provider configuration
 docs: add deployment notes
 chore: update repository structure
 ```
+
+
+## Testing Policy
+
+Every change that modifies reusable platform behavior must include or update tests. At minimum, contributors should run:
+
+```bash
+make test
+```
+
+Do not merge changes that bypass tenant isolation, RBAC, auditability, storage abstractions or deployment safety checks without explicit review.

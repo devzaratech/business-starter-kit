@@ -1,14 +1,8 @@
-import express from 'express';
+import { createApp } from './app.js';
 
-const app = express();
-const port = process.env.NODE_INTEGRATION_PORT || 3001;
-
-app.use(express.json());
-
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', service: 'api-node' });
-});
+const port = Number(process.env.PORT || 3001);
+const app = createApp();
 
 app.listen(port, () => {
-  console.log(`Node integration service listening on port ${port}`);
+  console.log(`Business Starter Kit Node API listening on port ${port}`);
 });

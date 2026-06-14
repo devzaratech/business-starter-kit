@@ -53,6 +53,20 @@ cp .env.example .env
 docker compose -f infra/compose/docker-compose.vps.yml up -d
 ```
 
+
+## Quality and Delivery
+
+Business Starter Kit includes CI/CD and unit testing scaffolding from day one.
+
+```bash
+make test
+make test-spring
+make test-node
+make validate-compose
+```
+
+The default CI pipeline validates Spring Boot tests, NodeJS/web/worker tests and Docker Compose configuration. Deployment workflows are environment-aware and prepared for Dev, QA, UAT, Staging and Prod.
+
 ## Git Initialization
 
 ```bash
@@ -71,4 +85,8 @@ git commit -m "chore: initialize business starter kit structure"
 - [Integration Patterns](docs/integrations/integration-patterns.md)
 - [Cloud Profiles](docs/cloud-profiles/cloud-profiles-overview.md)
 - [Operations Runbook](docs/operations/operations-runbook.md)
+- [Environment Strategy](docs/environments/README.md)
+- [CI/CD Strategy](docs/ci-cd/ci-cd-strategy.md)
+- [Unit Testing Strategy](docs/ci-cd/unit-testing-strategy.md)
+- [Quality Gates](docs/ci-cd/quality-gates.md)
 ```
