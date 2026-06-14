@@ -75,18 +75,59 @@ git add .
 git commit -m "chore: initialize business starter kit structure"
 ```
 
+## Running the Full Stack (Apps Included)
+
+The lean default above starts only the shared infrastructure (PostgreSQL, Redis,
+SeaweedFS, n8n) so the stack stays cheap and fast on a small VPS. To also build
+and run the application services (Spring Boot API, Node integration service, web
+app, worker) behind the reverse proxy, enable the `apps` Compose profile:
+
+```bash
+make up-full
+# or
+docker compose -f infra/compose/docker-compose.vps.yml --profile apps up -d
+```
+
 ## Documentation Index
 
+### Getting Started
+- [Local Development](docs/development/local-development.md)
+- [Environment Strategy](docs/environments/README.md)
+- [Troubleshooting Guide](docs/operations/troubleshooting.md)
+
+### Architecture
 - [Architecture Overview](docs/architecture/architecture-overview.md)
 - [Module Boundaries](docs/architecture/module-boundaries.md)
-- [VPS Docker Compose Deployment](docs/deployment/vps-docker-compose.md)
-- [Security Baseline](docs/security/security-baseline.md)
-- [Multi-Tenancy Strategy](docs/tenancy/multi-tenancy-strategy.md)
-- [Integration Patterns](docs/integrations/integration-patterns.md)
-- [Cloud Profiles](docs/cloud-profiles/cloud-profiles-overview.md)
-- [Operations Runbook](docs/operations/operations-runbook.md)
-- [Environment Strategy](docs/environments/README.md)
+- [Repository Map](docs/architecture/repository-map.md)
+- [Enterprise Growth Path](docs/architecture/enterprise-growth-path.md)
+
+### Delivery & Quality
 - [CI/CD Strategy](docs/ci-cd/ci-cd-strategy.md)
+- [Jenkins Strategy](docs/ci-cd/jenkins-strategy.md)
+- [SonarQube Strategy](docs/ci-cd/sonarqube-strategy.md)
 - [Unit Testing Strategy](docs/ci-cd/unit-testing-strategy.md)
 - [Quality Gates](docs/ci-cd/quality-gates.md)
-```
+- [Release Strategy](docs/release/release-strategy.md)
+
+### Deployment & Operations
+- [VPS Docker Compose Deployment](docs/deployment/vps-docker-compose.md)
+- [Cloud Profiles](docs/cloud-profiles/cloud-profiles-overview.md)
+- [Operations Runbook](docs/operations/operations-runbook.md)
+
+### Security & Tenancy
+- [Security Baseline](docs/security/security-baseline.md)
+- [Secrets Management](docs/security/secrets-management.md)
+- [RBAC Strategy](docs/security/rbac-strategy.md)
+- [Audit Logging Strategy](docs/security/audit-logging-strategy.md)
+- [Multi-Tenancy Strategy](docs/tenancy/multi-tenancy-strategy.md)
+
+### Data & Storage
+- [Database Provider Strategy](docs/database/database-provider-strategy.md)
+- [Supabase / PostgREST Optional Profile](docs/database/supabase-postgrest-profile.md)
+- [MongoDB Optional Profile](docs/database/mongodb-optional-profile.md)
+- [Storage Provider Strategy](docs/storage/storage-provider-strategy.md)
+
+### Integrations & Automation
+- [Integration Patterns](docs/integrations/integration-patterns.md)
+- [n8n Workflow Strategy](docs/integrations/n8n-workflow-strategy.md)
+- [CMS / ERP Integration Strategy](docs/integrations/cms-erp-integration-strategy.md)
