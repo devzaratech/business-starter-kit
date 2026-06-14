@@ -19,4 +19,7 @@ for file in infra/compose/docker-compose.*.yml; do
   docker compose -f "$file" config >/dev/null
 done
 
+echo "Running optional SonarQube analysis (skipped if not configured)..."
+./scripts/quality/run-sonar-scan.sh
+
 echo "All local quality checks passed."

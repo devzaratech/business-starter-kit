@@ -1,0 +1,54 @@
+name: business-starter-postgrest
+
+# Optional Supabase/PostgREST-style profile: PostgreSQL + PostgREST.
+#
+# Standalone overlay (does not include the VPS stack) so it can be started on its
+# own for experimentation:
+#
+#   docker compose -f infra/compose/docker-compose.postgrest.yml up -d
+#
+# PostgREST exposes ONLY the explicit "api" schema. Keep internal platform tables
+# out of that schema and expose them through views or RPC functions instead.
+
+services:
+  postgrest-db:
+    image: postgres:16-alpine
+    container_name: bsk-postgrest-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGREST_DB:-business_starter}
+      POSTGRES_USER: ${POSTGREST_DB_USER:-business_starter}
+      POSTGRES_PASSWORD: ${POSTGREST_DB_PASSWORD:-change_me}
+    volumes:
+      - postgrest-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGREST_DB_USER:-business_starter}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bsk-postgrest
+
+  postgrest:
+    image: postgrest/postgrest:v12.2.3
+    container_name: bsk-postgrest
+    restart: unless-stopped
+    environment:
+      PGRST_DB_URI: postgres://${POSTGREST_DB_USER:-business_starter}:${POSTGREST_DB_PASSWORD:-change_me}@postgrest-db:5432/${POSTGREST_DB:-business_starter}
+      PGRST_DB_SCHEMAS: api
+      PGRST_DB_ANON_ROLE: web_anon
+      PGRST_OPENAPI_SERVER_PROXY_URI: http://localhost:3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgrest-db:
+        condition: service_healthy
+    networks:
+      - bsk-postgrest
+
+networks:
+  bsk-postgrest:
+    driver: bridge
+
+volumes:
+  postgrest-db-data:

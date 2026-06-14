@@ -1,0 +1,37 @@
+name: business-starter-mongodb
+
+# Optional MongoDB profile for document-shaped data.
+#
+# Standalone overlay (does not include the VPS stack):
+#
+#   docker compose -f infra/compose/docker-compose.mongodb.yml up -d
+#
+# MongoDB is optional and does not replace PostgreSQL as the canonical store.
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: bsk-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER:-business_starter}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD:-change_me}
+      MONGO_INITDB_DATABASE: ${MONGODB_DB:-business_starter}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bsk-mongodb
+
+networks:
+  bsk-mongodb:
+    driver: bridge
+
+volumes:
+  mongodb-data:
