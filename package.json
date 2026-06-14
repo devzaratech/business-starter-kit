@@ -9,7 +9,7 @@
     "apps/worker"
   ],
   "scripts": {
-    "test": "npm run test --workspaces --if-present",
+    "test": "npm run test:node && npm run test:web && npm run test:worker",
     "test:node": "npm --workspace @business-starter-kit/api-node run test",
     "test:web": "npm --workspace @business-starter-kit/web run test",
     "test:worker": "npm --workspace @business-starter-kit/worker run test",
