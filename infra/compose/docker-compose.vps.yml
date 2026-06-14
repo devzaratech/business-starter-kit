@@ -1,0 +1,113 @@
+name: business-starter-kit
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: bsk-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-business_starter}
+      POSTGRES_USER: ${POSTGRES_USER:-business_starter}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - bsk-internal
+
+  redis:
+    image: redis:7-alpine
+    container_name: bsk-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - bsk-internal
+
+  seaweed-master:
+    image: chrislusf/seaweedfs:3.94
+    container_name: bsk-seaweed-master
+    restart: unless-stopped
+    command: "master -ip=seaweed-master -mdir=/data -volumeSizeLimitMB=1024"
+    volumes:
+      - seaweed-master-data:/data
+    networks:
+      - bsk-internal
+
+  seaweed-volume:
+    image: chrislusf/seaweedfs:3.94
+    container_name: bsk-seaweed-volume
+    restart: unless-stopped
+    command: "volume -mserver=seaweed-master:9333 -ip=seaweed-volume -dir=/data -max=0"
+    depends_on:
+      - seaweed-master
+    volumes:
+      - seaweed-volume-data:/data
+    networks:
+      - bsk-internal
+
+  seaweed-filer:
+    image: chrislusf/seaweedfs:3.94
+    container_name: bsk-seaweed-filer
+    restart: unless-stopped
+    command: "filer -master=seaweed-master:9333 -ip=seaweed-filer"
+    depends_on:
+      - seaweed-master
+      - seaweed-volume
+    volumes:
+      - seaweed-filer-data:/data
+    networks:
+      - bsk-internal
+
+  seaweed-s3:
+    image: chrislusf/seaweedfs:3.94
+    container_name: bsk-seaweed-s3
+    restart: unless-stopped
+    command: "s3 -filer=seaweed-filer:8888 -ip.bind=0.0.0.0"
+    depends_on:
+      - seaweed-filer
+    ports:
+      - "8333:8333"
+    networks:
+      - bsk-internal
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: bsk-n8n
+    restart: unless-stopped
+    environment:
+      N8N_HOST: ${N8N_HOST:-localhost}
+      N8N_PORT: ${N8N_PORT:-5678}
+      N8N_PROTOCOL: http
+      N8N_BASIC_AUTH_ACTIVE: "true"
+      N8N_BASIC_AUTH_USER: ${N8N_BASIC_AUTH_USER:-admin}
+      N8N_BASIC_AUTH_PASSWORD: ${N8N_BASIC_AUTH_PASSWORD:-change_me}
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: ${POSTGRES_DB:-business_starter}
+      DB_POSTGRESDB_USER: ${POSTGRES_USER:-business_starter}
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
+    ports:
+      - "5678:5678"
+    volumes:
+      - n8n-data:/home/node/.n8n
+    depends_on:
+      - postgres
+    networks:
+      - bsk-internal
+
+networks:
+  bsk-internal:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redis-data:
+  seaweed-master-data:
+  seaweed-volume-data:
+  seaweed-filer-data:
+  n8n-data:

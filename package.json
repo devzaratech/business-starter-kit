@@ -1,0 +1,15 @@
+{
+  "name": "business-starter-kit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Private, sanitized, modular and scalable SaaS foundation for business applications.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm --workspace apps/web run dev",
+    "dev:api-node": "npm --workspace apps/api-node run dev",
+    "dev:worker": "npm --workspace apps/worker run dev"
+  }
+}

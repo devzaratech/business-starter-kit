@@ -1,0 +1,14 @@
+# Example reverse proxy for lean VPS deployments.
+# Replace domains and upstreams before production use.
+
+business-starter.localhost {
+  reverse_proxy apps-web:5173
+}
+
+api.business-starter.localhost {
+  reverse_proxy api-spring:8080
+}
+
+n8n.business-starter.localhost {
+  reverse_proxy n8n:5678
+}
