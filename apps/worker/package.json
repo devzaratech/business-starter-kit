@@ -6,10 +6,7 @@
   "scripts": {
     "dev": "node src/index.js",
     "start": "node src/index.js",
-    "test": "vitest run"
+    "test": "node --test"
   },
-  "dependencies": {},
-  "devDependencies": {
-    "vitest": "^2.0.0"
-  }
+  "dependencies": {}
 }

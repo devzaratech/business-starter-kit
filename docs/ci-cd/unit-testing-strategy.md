@@ -6,7 +6,7 @@ Unit testing is mandatory for the platform core and strongly recommended for eve
 
 | Layer | Purpose | Example Tooling |
 |---|---|---|
-| Unit tests | Validate isolated functions, services and domain rules | JUnit, Vitest |
+| Unit tests | Validate isolated functions, services and domain rules | JUnit, Node.js test runner |
 | Integration tests | Validate database, storage, queues and external adapter behavior | Testcontainers, Docker Compose |
 | Contract tests | Validate API contracts between services and adapters | OpenAPI, schema tests |
 | End-to-end tests | Validate critical user flows | Playwright or equivalent |
