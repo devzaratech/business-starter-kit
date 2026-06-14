@@ -1,0 +1,27 @@
+# Working reverse proxy used by the "apps" Compose profile.
+#
+# Listens on plain HTTP :80 so it works on a bare VPS IP out of the box.
+# For production, replace ":80" with your domain (e.g. app.example.com) and
+# Caddy will provision TLS automatically; then enable the 443 port mapping in
+# docker-compose.vps.yml.
+#
+# Routing:
+#   /api/node/*  -> Node integration service
+#   /api/*       -> Spring Boot core API
+#   everything   -> Web application (SPA)
+
+:80 {
+	encode gzip
+
+	handle_path /api/node/* {
+		reverse_proxy api-node:3001
+	}
+
+	handle /api/* {
+		reverse_proxy api-spring:8080
+	}
+
+	handle {
+		reverse_proxy web:80
+	}
+}

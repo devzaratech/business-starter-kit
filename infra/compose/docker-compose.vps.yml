@@ -1,6 +1,25 @@
 name: business-starter-kit
 
+# Lean, VPS-first Compose stack.
+#
+# Default (lean) startup brings up only shared infrastructure so the stack stays
+# cheap and fast on a small VPS:
+#
+#   docker compose -f infra/compose/docker-compose.vps.yml up -d
+#
+# To also build and run the application services + reverse proxy, enable the
+# "apps" profile:
+#
+#   docker compose -f infra/compose/docker-compose.vps.yml --profile apps up -d
+#
+# Production note: the host port mappings on postgres, redis, seaweed-s3 and n8n
+# are convenient for local/dev access but should be removed (or bound to a
+# private network / VPN) before exposing this stack to the public internet.
+
 services:
+  # ----------------------------------------------------------------------------
+  # Shared infrastructure (default lean stack)
+  # ----------------------------------------------------------------------------
   postgres:
     image: postgres:16-alpine
     container_name: bsk-postgres
@@ -13,6 +32,12 @@ services:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-business_starter} -d ${POSTGRES_DB:-business_starter}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     networks:
       - bsk-internal
 
@@ -24,6 +49,11 @@ services:
       - "6379:6379"
     volumes:
       - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - bsk-internal
 
@@ -96,7 +126,91 @@ services:
     volumes:
       - n8n-data:/home/node/.n8n
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    networks:
+      - bsk-internal
+
+  # ----------------------------------------------------------------------------
+  # Application services (opt-in via: --profile apps)
+  # ----------------------------------------------------------------------------
+  api-spring:
+    build:
+      context: ../../apps/api-spring
+    image: bsk/api-spring:${IMAGE_TAG:-local}
+    container_name: bsk-api-spring
+    restart: unless-stopped
+    profiles: ["apps"]
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-business_starter}
+      POSTGRES_USER: ${POSTGRES_USER:-business_starter}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
+      API_PORT: 8080
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "sh", "-c", "wget --quiet --tries=1 --spider http://127.0.0.1:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+    networks:
+      - bsk-internal
+
+  api-node:
+    build:
+      context: ../../apps/api-node
+    image: bsk/api-node:${IMAGE_TAG:-local}
+    container_name: bsk-api-node
+    restart: unless-stopped
+    profiles: ["apps"]
+    environment:
+      PORT: 3001
+    networks:
+      - bsk-internal
+
+  worker:
+    build:
+      context: ../../apps/worker
+    image: bsk/worker:${IMAGE_TAG:-local}
+    container_name: bsk-worker
+    restart: unless-stopped
+    profiles: ["apps"]
+    environment:
+      WORKER_HEARTBEAT_FILE: /tmp/worker-heartbeat.json
+    networks:
+      - bsk-internal
+
+  web:
+    build:
+      context: ../../apps/web
+    image: bsk/web:${IMAGE_TAG:-local}
+    container_name: bsk-web
+    restart: unless-stopped
+    profiles: ["apps"]
+    networks:
+      - bsk-internal
+
+  reverse-proxy:
+    image: caddy:2-alpine
+    container_name: bsk-reverse-proxy
+    restart: unless-stopped
+    profiles: ["apps"]
+    ports:
+      - "80:80"
+      # - "443:443"   # enable once a real domain + TLS are configured
+    volumes:
+      - ../caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - web
+      - api-spring
+      - api-node
     networks:
       - bsk-internal
 
@@ -111,3 +225,5 @@ volumes:
   seaweed-volume-data:
   seaweed-filer-data:
   n8n-data:
+  caddy-data:
+  caddy-config:
