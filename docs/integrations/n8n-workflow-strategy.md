@@ -22,8 +22,8 @@ guarantees.
 
 | Path | Purpose |
 |---|---|
-| `n8n/workflows/` | Sanitized, generic workflow exports. |
-| `n8n/credentials.example/` | Credential templates (never real secrets). |
+| `automation/n8n/workflows/` | Sanitized, generic workflow exports. |
+| `automation/n8n/credentials.example/` | Credential templates (never real secrets). |
 
 ## Rules
 

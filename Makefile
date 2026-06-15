@@ -4,7 +4,7 @@ COMPOSE_VPS := infra/compose/docker-compose.vps.yml
 
 .PHONY: help init up up-full down logs ps build-images \
         test test-spring test-node validate-compose validate-env quality sonar \
-        env-local env-dev env-qa env-uat env-staging env-prod deploy-local deploy-dev deploy-qa deploy-uat deploy-staging deploy-prod
+        env-local env-dev env-qa env-uat env-staging env-prod deploy-local deploy-dev deploy-qa deploy-uat deploy-staging deploy-prod supabase-start supabase-stop supabase-status supabase-db-reset supabase-studio
 
 help:
 	@echo "Business Starter Kit commands"
@@ -25,6 +25,8 @@ help:
 	@echo "  make sonar              Run SonarQube analysis (skips if not configured)"
 	@echo "  make deploy-dev         Restart the Dev environment stack"
 	@echo "  make deploy-prod        Restart Prod only with CONFIRM_PROD_DEPLOY=yes"
+	@echo "  make supabase-start     Start Supabase CLI local stack, including Studio"
+	@echo "  make supabase-studio    Print the local Supabase Studio URL"
 
 init:
 	@test -f .env || cp .env.example .env
@@ -115,3 +117,19 @@ deploy-staging:
 deploy-prod:
 	@if [[ "$(CONFIRM_PROD_DEPLOY)" != "yes" ]]; then echo "Refusing production deploy. Re-run with CONFIRM_PROD_DEPLOY=yes after reviewing config/env/.env.prod."; exit 1; fi
 	./scripts/deploy/restart-compose.sh prod
+
+
+supabase-start:
+	supabase start
+
+supabase-stop:
+	supabase stop
+
+supabase-status:
+	supabase status
+
+supabase-db-reset:
+	supabase db reset
+
+supabase-studio:
+	@echo "Supabase Studio: http://127.0.0.1:54323"

@@ -85,3 +85,8 @@ Before production use:
 - Configure backups.
 - Configure log retention.
 - Define tenant isolation strategy.
+
+
+## Port Convention
+
+The VPS Compose stack uses environment-driven host ports and bind addresses. See [Port Convention](../environments/port-convention.md) before running multiple environments on the same VPS. Administrative services bind to localhost by default and should be reached through private access paths.

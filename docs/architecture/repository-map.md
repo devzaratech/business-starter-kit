@@ -48,3 +48,12 @@ docs/storage            Storage provider strategy
 docs/integrations       Integration patterns, n8n, CMS/ERP
 docs/environments       Environment strategy and per-environment notes
 ```
+
+
+## Final Structural Notes
+
+- `automation/n8n/` stores n8n workflow exports and credential templates.
+- `data/` stores provider-specific data-layer profiles and placeholders.
+- `supabase/` remains at the repository root for Supabase CLI compatibility and Studio support.
+- `docs/environments/port-convention.md` defines Local, Dev, QA, UAT, Staging and Prod host port conventions.
+- `supabase/config.toml` defines the local Supabase CLI profile, including Studio on `127.0.0.1:54323`.

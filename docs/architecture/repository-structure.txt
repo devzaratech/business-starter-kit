@@ -1,227 +1,194 @@
-# Auto-generated repository structure snapshot.
-# Regenerate with:
-#   find . -path ./.git -prune -o -path '*/node_modules' -prune -o -not -name .gitkeep -print | sort
-
-.editorconfig
-.env.example
-.github
-.github/workflows
-.github/workflows/ci.yml
-.github/workflows/deploy.yml
-.github/workflows/release.yml
-.gitignore
-CONTRIBUTING.md
-Jenkinsfile
-LICENSE
-Makefile
-README.md
-SECURITY.md
-apps
-apps/api-node
-apps/api-node/.dockerignore
-apps/api-node/Dockerfile
-apps/api-node/README.md
-apps/api-node/package.json
-apps/api-node/src
-apps/api-node/src/app.js
-apps/api-node/src/index.js
-apps/api-node/test
-apps/api-node/test/app.test.js
-apps/api-spring
-apps/api-spring/.dockerignore
-apps/api-spring/Dockerfile
-apps/api-spring/README.md
-apps/api-spring/pom.xml
-apps/api-spring/src
-apps/api-spring/src/main
-apps/api-spring/src/main/java
-apps/api-spring/src/main/java/com
-apps/api-spring/src/main/java/com/businessstarterkit
-apps/api-spring/src/main/java/com/businessstarterkit/api
-apps/api-spring/src/main/java/com/businessstarterkit/api/BusinessStarterKitApiApplication.java
-apps/api-spring/src/main/java/com/businessstarterkit/api/platform
-apps/api-spring/src/main/java/com/businessstarterkit/api/platform/EnvironmentName.java
-apps/api-spring/src/main/resources
-apps/api-spring/src/main/resources/application.yml
-apps/api-spring/src/test
-apps/api-spring/src/test/java
-apps/api-spring/src/test/java/com
-apps/api-spring/src/test/java/com/businessstarterkit
-apps/api-spring/src/test/java/com/businessstarterkit/api
-apps/api-spring/src/test/java/com/businessstarterkit/api/platform
-apps/api-spring/src/test/java/com/businessstarterkit/api/platform/EnvironmentNameTest.java
-apps/web
-apps/web/.dockerignore
-apps/web/Dockerfile
-apps/web/README.md
-apps/web/index.html
-apps/web/nginx.conf
-apps/web/package.json
-apps/web/src
-apps/web/src/environment.js
-apps/web/src/environment.ts
-apps/web/src/main.tsx
-apps/web/test
-apps/web/test/environment.test.js
-apps/web/tsconfig.json
-apps/web/vite.config.ts
-apps/worker
-apps/worker/.dockerignore
-apps/worker/Dockerfile
-apps/worker/README.md
-apps/worker/package.json
-apps/worker/src
-apps/worker/src/heartbeat.js
-apps/worker/src/index.js
-apps/worker/test
-apps/worker/test/heartbeat.test.js
-config
-config/env
-config/env/.env.dev.example
-config/env/.env.local.example
-config/env/.env.prod.example
-config/env/.env.qa.example
-config/env/.env.staging.example
-config/env/.env.uat.example
-docs
-docs/architecture
-docs/architecture/architecture-overview.md
-docs/architecture/decisions
-docs/architecture/decisions/0001-ci-cd-and-testing-baseline.md
-docs/architecture/decisions/0002-dockerization-and-reverse-proxy.md
-docs/architecture/decisions/0003-jenkins-and-optional-quality-gates.md
-docs/architecture/enterprise-growth-path.md
-docs/architecture/module-boundaries.md
-docs/architecture/repository-map.md
-docs/architecture/repository-structure.txt
-docs/ci-cd
-docs/ci-cd/README.md
-docs/ci-cd/ci-cd-strategy.md
-docs/ci-cd/jenkins-strategy.md
-docs/ci-cd/quality-gates.md
-docs/ci-cd/sonarqube-strategy.md
-docs/ci-cd/unit-testing-strategy.md
-docs/cloud-profiles
-docs/cloud-profiles/cloud-profiles-overview.md
-docs/database
-docs/database/database-provider-strategy.md
-docs/database/mongodb-optional-profile.md
-docs/database/supabase-postgrest-profile.md
-docs/deployment
-docs/deployment/vps-docker-compose.md
-docs/development
-docs/development/local-development.md
-docs/environments
-docs/environments/README.md
-docs/environments/dev.md
-docs/environments/local.md
-docs/environments/prod.md
-docs/environments/qa.md
-docs/environments/staging.md
-docs/environments/uat.md
-docs/integrations
-docs/integrations/cms-erp-integration-strategy.md
-docs/integrations/integration-patterns.md
-docs/integrations/n8n-workflow-strategy.md
-docs/operations
-docs/operations/operations-runbook.md
-docs/operations/troubleshooting.md
-docs/release
-docs/release/release-strategy.md
-docs/security
-docs/security/audit-logging-strategy.md
-docs/security/rbac-strategy.md
-docs/security/secrets-management.md
-docs/security/security-baseline.md
-docs/storage
-docs/storage/storage-provider-strategy.md
-docs/tenancy
-docs/tenancy/multi-tenancy-strategy.md
-examples
-examples/README.md
-examples/cms-backed-portal
-examples/cms-backed-portal/README.md
-examples/crm-lite
-examples/crm-lite/README.md
-examples/erp-lite
-examples/erp-lite/README.md
-examples/operations-dashboard
-examples/operations-dashboard/README.md
-infra
-infra/aws
-infra/aws/README.md
-infra/azure
-infra/azure/README.md
-infra/caddy
-infra/caddy/Caddyfile
-infra/caddy/Caddyfile.example
-infra/cloudflare
-infra/cloudflare/README.md
-infra/compose
-infra/compose/docker-compose.dev.yml
-infra/compose/docker-compose.local.yml
-infra/compose/docker-compose.mongodb.yml
-infra/compose/docker-compose.postgrest.yml
-infra/compose/docker-compose.prod.yml
-infra/compose/docker-compose.qa.yml
-infra/compose/docker-compose.staging.yml
-infra/compose/docker-compose.uat.yml
-infra/compose/docker-compose.vps.yml
-infra/docker
-infra/docker/README.md
-infra/gcp
-infra/gcp/README.md
-infra/nginx
-infra/nginx/nginx.conf.example
-infra/tailscale
-infra/tailscale/README.md
-n8n
-n8n/README.md
-n8n/credentials.example
-n8n/credentials.example/README.md
-n8n/workflows
-n8n/workflows/example-email-ingestion.workflow.json
-package-lock.json
-package.json
-packages
-packages/audit
-packages/audit/README.md
-packages/audit/src
-packages/auth-rbac
-packages/auth-rbac/README.md
-packages/auth-rbac/src
-packages/core-domain
-packages/core-domain/README.md
-packages/core-domain/src
-packages/integrations
-packages/integrations/README.md
-packages/integrations/src
-packages/observability
-packages/observability/README.md
-packages/observability/src
-packages/storage
-packages/storage/README.md
-packages/storage/src
-packages/tenancy
-packages/tenancy/README.md
-packages/tenancy/src
-scripts
-scripts/check-sanitization.sh
-scripts/deploy
-scripts/deploy/restart-compose.sh
-scripts/init-repo.sh
-scripts/quality
-scripts/quality/run-all-tests.sh
-scripts/quality/run-sonar-scan.sh
-scripts/quality/validate-env.sh
-sonar-project.properties
-supabase
-supabase/README.md
-supabase/functions
-supabase/functions/README.md
-supabase/migrations
-supabase/migrations/0001_initial_platform_schema.sql
-supabase/policies
-supabase/policies/README.md
-supabase/postgrest
-supabase/postgrest/README.md
+business-starter-kit/
+  .editorconfig
+  .env.example
+  .github/workflows/ci.yml
+  .github/workflows/deploy.yml
+  .github/workflows/release.yml
+  .gitignore
+  CHANGELOG.md
+  CONTRIBUTING.md
+  Jenkinsfile
+  LICENSE
+  Makefile
+  README.md
+  SECURITY.md
+  apps/api-node/.dockerignore
+  apps/api-node/Dockerfile
+  apps/api-node/README.md
+  apps/api-node/package.json
+  apps/api-node/src/.gitkeep
+  apps/api-node/src/app.js
+  apps/api-node/src/index.js
+  apps/api-node/test/app.test.js
+  apps/api-spring/.dockerignore
+  apps/api-spring/Dockerfile
+  apps/api-spring/README.md
+  apps/api-spring/pom.xml
+  apps/api-spring/src/main/java/com/businessstarterkit/api/.gitkeep
+  apps/api-spring/src/main/java/com/businessstarterkit/api/BusinessStarterKitApiApplication.java
+  apps/api-spring/src/main/java/com/businessstarterkit/api/platform/EnvironmentName.java
+  apps/api-spring/src/main/resources/.gitkeep
+  apps/api-spring/src/main/resources/application.yml
+  apps/api-spring/src/test/java/com/businessstarterkit/api/platform/EnvironmentNameTest.java
+  apps/web/.dockerignore
+  apps/web/Dockerfile
+  apps/web/README.md
+  apps/web/index.html
+  apps/web/nginx.conf
+  apps/web/package.json
+  apps/web/src/.gitkeep
+  apps/web/src/environment.js
+  apps/web/src/environment.ts
+  apps/web/src/main.tsx
+  apps/web/test/environment.test.js
+  apps/web/tsconfig.json
+  apps/web/vite.config.ts
+  apps/worker/.dockerignore
+  apps/worker/Dockerfile
+  apps/worker/README.md
+  apps/worker/package.json
+  apps/worker/src/.gitkeep
+  apps/worker/src/heartbeat.js
+  apps/worker/src/index.js
+  apps/worker/test/heartbeat.test.js
+  automation/n8n/README.md
+  automation/n8n/credentials.example/.gitkeep
+  automation/n8n/credentials.example/README.md
+  automation/n8n/workflows/.gitkeep
+  automation/n8n/workflows/example-email-ingestion.workflow.json
+  config/env/.env.dev.example
+  config/env/.env.local.example
+  config/env/.env.prod.example
+  config/env/.env.qa.example
+  config/env/.env.staging.example
+  config/env/.env.uat.example
+  data/README.md
+  data/analytics/clickhouse/.gitkeep
+  data/cache/redis/.gitkeep
+  data/document/mongodb/.gitkeep
+  data/relational/mssql/.gitkeep
+  data/relational/mysql/.gitkeep
+  data/relational/oracle/.gitkeep
+  data/relational/postgres/.gitkeep
+  data/search/opensearch/.gitkeep
+  docs/architecture/.gitkeep
+  docs/architecture/architecture-overview.md
+  docs/architecture/decisions/0001-ci-cd-and-testing-baseline.md
+  docs/architecture/decisions/0002-dockerization-and-reverse-proxy.md
+  docs/architecture/decisions/0003-jenkins-and-optional-quality-gates.md
+  docs/architecture/enterprise-growth-path.md
+  docs/architecture/module-boundaries.md
+  docs/architecture/repository-map.md
+  docs/architecture/repository-structure.txt
+  docs/ci-cd/README.md
+  docs/ci-cd/ci-cd-strategy.md
+  docs/ci-cd/jenkins-strategy.md
+  docs/ci-cd/quality-gates.md
+  docs/ci-cd/sonarqube-strategy.md
+  docs/ci-cd/unit-testing-strategy.md
+  docs/cloud-profiles/.gitkeep
+  docs/cloud-profiles/cloud-profiles-overview.md
+  docs/database/database-provider-strategy.md
+  docs/database/mongodb-optional-profile.md
+  docs/database/mssql-optional-profile.md
+  docs/database/oracle-optional-profile.md
+  docs/database/supabase-postgrest-profile.md
+  docs/database/supabase-studio.md
+  docs/deployment/.gitkeep
+  docs/deployment/vps-docker-compose.md
+  docs/development/local-development.md
+  docs/environments/README.md
+  docs/environments/dev.md
+  docs/environments/local.md
+  docs/environments/port-convention.md
+  docs/environments/prod.md
+  docs/environments/qa.md
+  docs/environments/staging.md
+  docs/environments/uat.md
+  docs/integrations/.gitkeep
+  docs/integrations/cms-erp-integration-strategy.md
+  docs/integrations/integration-patterns.md
+  docs/integrations/n8n-workflow-strategy.md
+  docs/operations/.gitkeep
+  docs/operations/operations-runbook.md
+  docs/operations/troubleshooting.md
+  docs/release/release-strategy.md
+  docs/security/.gitkeep
+  docs/security/audit-logging-strategy.md
+  docs/security/rbac-strategy.md
+  docs/security/secrets-management.md
+  docs/security/security-baseline.md
+  docs/storage/storage-provider-strategy.md
+  docs/tenancy/.gitkeep
+  docs/tenancy/multi-tenancy-strategy.md
+  examples/README.md
+  examples/cms-backed-portal/.gitkeep
+  examples/cms-backed-portal/README.md
+  examples/crm-lite/.gitkeep
+  examples/crm-lite/README.md
+  examples/erp-lite/.gitkeep
+  examples/erp-lite/README.md
+  examples/operations-dashboard/.gitkeep
+  examples/operations-dashboard/README.md
+  infra/aws/.gitkeep
+  infra/aws/README.md
+  infra/azure/.gitkeep
+  infra/azure/README.md
+  infra/caddy/.gitkeep
+  infra/caddy/Caddyfile
+  infra/caddy/Caddyfile.example
+  infra/cloudflare/.gitkeep
+  infra/cloudflare/README.md
+  infra/compose/.gitkeep
+  infra/compose/docker-compose.dev.yml
+  infra/compose/docker-compose.local.yml
+  infra/compose/docker-compose.mongodb.yml
+  infra/compose/docker-compose.postgrest.yml
+  infra/compose/docker-compose.prod.yml
+  infra/compose/docker-compose.qa.yml
+  infra/compose/docker-compose.staging.yml
+  infra/compose/docker-compose.uat.yml
+  infra/compose/docker-compose.vps.yml
+  infra/docker/.gitkeep
+  infra/docker/README.md
+  infra/gcp/.gitkeep
+  infra/gcp/README.md
+  infra/nginx/.gitkeep
+  infra/nginx/nginx.conf.example
+  infra/tailscale/.gitkeep
+  infra/tailscale/README.md
+  package-lock.json
+  package.json
+  packages/audit/README.md
+  packages/audit/src/.gitkeep
+  packages/auth-rbac/README.md
+  packages/auth-rbac/src/.gitkeep
+  packages/core-domain/README.md
+  packages/core-domain/src/.gitkeep
+  packages/integrations/README.md
+  packages/integrations/src/.gitkeep
+  packages/observability/README.md
+  packages/observability/src/.gitkeep
+  packages/storage/README.md
+  packages/storage/src/.gitkeep
+  packages/tenancy/README.md
+  packages/tenancy/src/.gitkeep
+  scripts/.gitkeep
+  scripts/check-sanitization.sh
+  scripts/deploy/restart-compose.sh
+  scripts/init-repo.sh
+  scripts/quality/run-all-tests.sh
+  scripts/quality/run-sonar-scan.sh
+  scripts/quality/validate-env.sh
+  sonar-project.properties
+  supabase/README.md
+  supabase/config.toml
+  supabase/functions/.gitkeep
+  supabase/functions/README.md
+  supabase/migrations/.gitkeep
+  supabase/migrations/0001_initial_platform_schema.sql
+  supabase/policies/.gitkeep
+  supabase/policies/README.md
+  supabase/postgrest/.gitkeep
+  supabase/postgrest/README.md
+  supabase/seed.sql

@@ -35,3 +35,14 @@ profiles selected per use case, never required defaults.
 
 See also: [Supabase / PostgREST Optional Profile](supabase-postgrest-profile.md)
 and [MongoDB Optional Profile](mongodb-optional-profile.md).
+
+
+## Repository Layout
+
+Provider-specific data assets belong under `data/` by category. Supabase is intentionally kept at the repository root because the Supabase CLI expects and manages a `supabase/` project folder with configuration, migrations, functions, policies and Studio support.
+
+See also:
+
+- [Supabase Studio](supabase-studio.md)
+- [MS SQL Server Optional Profile](mssql-optional-profile.md)
+- [Oracle Optional Profile](oracle-optional-profile.md)

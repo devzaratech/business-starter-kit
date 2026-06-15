@@ -40,3 +40,8 @@ or in a managed secret store. See [Secrets Management](../security/secrets-manag
 `config/env/.env.dev` by default. It refuses to deploy with `.example` templates
 unless `ALLOW_EXAMPLE_ENV=yes` is explicitly set for disposable local testing.
 This prevents accidental deployments with placeholder passwords.
+
+
+## Port Convention
+
+Environment-specific host ports are documented in [Port Convention](port-convention.md). The default profile uses stable internal ports and environment-specific host ports so Local, Dev, QA, UAT, Staging and Prod can coexist on one VPS when necessary.

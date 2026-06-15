@@ -18,7 +18,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD:-change_me}
       MONGO_INITDB_DATABASE: ${MONGODB_DB:-business_starter}
     ports:
-      - "27017:27017"
+      - "${MONGODB_HOST_BIND:-127.0.0.1}:${MONGODB_HOST_PORT:-27017}:27017"
     volumes:
       - mongodb-data:/data/db
     healthcheck:

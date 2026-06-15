@@ -39,7 +39,7 @@ services:
       PGRST_DB_ANON_ROLE: web_anon
       PGRST_OPENAPI_SERVER_PROXY_URI: http://localhost:3000
     ports:
-      - "3000:3000"
+      - "${POSTGREST_HOST_BIND:-127.0.0.1}:${POSTGREST_HOST_PORT:-3000}:3000"
     depends_on:
       postgrest-db:
         condition: service_healthy

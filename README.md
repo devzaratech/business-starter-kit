@@ -22,8 +22,9 @@ business-starter-kit/
 ├── apps/                  # Deployable applications and services
 ├── packages/              # Shared platform modules
 ├── infra/                 # Docker, reverse proxy and cloud infrastructure profiles
-├── supabase/              # Supabase/PostgREST migrations, policies and functions
-├── n8n/                   # Workflow automation exports and credential templates
+├── automation/            # Workflow automation assets such as n8n workflows
+├── data/                  # Database provider profiles and data-layer strategy
+├── supabase/              # Supabase CLI profile, migrations, policies and functions
 ├── docs/                  # English documentation
 ├── examples/              # Sanitized example products built on top of the platform
 └── scripts/               # Developer and operational scripts
@@ -93,6 +94,7 @@ docker compose -f infra/compose/docker-compose.vps.yml --profile apps up -d
 ### Getting Started
 - [Local Development](docs/development/local-development.md)
 - [Environment Strategy](docs/environments/README.md)
+- [Port Convention](docs/environments/port-convention.md)
 - [Troubleshooting Guide](docs/operations/troubleshooting.md)
 
 ### Architecture
@@ -124,7 +126,10 @@ docker compose -f infra/compose/docker-compose.vps.yml --profile apps up -d
 ### Data & Storage
 - [Database Provider Strategy](docs/database/database-provider-strategy.md)
 - [Supabase / PostgREST Optional Profile](docs/database/supabase-postgrest-profile.md)
+- [Supabase Studio](docs/database/supabase-studio.md)
 - [MongoDB Optional Profile](docs/database/mongodb-optional-profile.md)
+- [MS SQL Server Optional Profile](docs/database/mssql-optional-profile.md)
+- [Oracle Optional Profile](docs/database/oracle-optional-profile.md)
 - [Storage Provider Strategy](docs/storage/storage-provider-strategy.md)
 
 ### Integrations & Automation
