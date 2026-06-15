@@ -26,7 +26,7 @@ runner, not a requirement.
 
 1. **Checkout** – fetch the repository.
 2. **Spring Boot API tests** – `mvn --batch-mode test`.
-3. **Node, worker and web tests** – `npm install` + `npm test`.
+3. **Node, worker and web tests** – `npm ci` + `npm test`.
 4. **Docker Compose validation** – `docker compose config` for every environment file.
 5. **SonarQube analysis** – only when `RUN_SONAR` is set; skips gracefully if SonarQube is not configured.
 6. **Build images** – only when `BUILD_IMAGES` or `DEPLOY` is set.

@@ -8,7 +8,7 @@ echo "Running Spring Boot tests..."
 (cd apps/api-spring && mvn --batch-mode test)
 
 echo "Installing Node workspace dependencies..."
-npm install
+npm ci
 
 echo "Running Node workspace tests..."
 npm test

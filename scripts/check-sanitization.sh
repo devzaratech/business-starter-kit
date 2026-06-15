@@ -8,6 +8,7 @@ FORBIDDEN_PATTERNS=(
   "private_key_value"
   "net-control-tower"
   "netployee"
+  "logistics-control-tower"
 )
 
 echo "Running basic sanitization checks..."

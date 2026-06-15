@@ -69,7 +69,7 @@ pipeline {
 
         stage('Node, worker and web tests') {
             steps {
-                sh 'npm install'
+                sh 'npm ci'
                 sh 'npm test'
             }
         }

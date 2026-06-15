@@ -145,8 +145,8 @@ examples/crm-lite
 examples/crm-lite/README.md
 examples/erp-lite
 examples/erp-lite/README.md
-examples/logistics-control-tower
-examples/logistics-control-tower/README.md
+examples/operations-dashboard
+examples/operations-dashboard/README.md
 infra
 infra/aws
 infra/aws/README.md

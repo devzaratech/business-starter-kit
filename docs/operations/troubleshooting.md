@@ -33,12 +33,12 @@ tool (Flyway/Liquibase) and apply migrations before validation.
 ## Node / Web
 
 **`ERR_MODULE_NOT_FOUND` for a dependency**
-Run `npm install` from the repository root (workspaces hoist dependencies). The
+Run `npm ci` from the repository root (workspaces hoist dependencies). The
 worker and web tests need no external dependencies; the Node API needs Express.
 
 **Web build fails on a dependency version**
 Dependencies are pinned in `apps/web/package.json`. If a registry blocks a
-version, adjust the pin and refresh `package-lock.json` with `npm install`.
+version, adjust the pin and refresh `package-lock.json` with `npm install`, then validate with `npm ci`.
 
 ## CI/CD
 

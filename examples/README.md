@@ -8,5 +8,5 @@ Initial examples:
 
 - CRM Lite
 - ERP Lite
-- Logistics Control Tower
+- Operations Dashboard
 - CMS-backed Portal

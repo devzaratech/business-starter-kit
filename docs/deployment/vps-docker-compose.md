@@ -39,6 +39,30 @@ With the full stack running, the reverse proxy exposes everything on port 80:
 - `http://localhost/api/` → Spring Boot API
 - `http://localhost/api/node/` → Node integration service
 
+
+## Environment-Specific Deployment
+
+For environment-aware deployments, create a real runtime env file from the
+matching template and replace every placeholder before deploying:
+
+```bash
+make env-dev
+nano config/env/.env.dev
+make validate-env ENV_FILE=config/env/.env.dev
+make deploy-dev
+```
+
+Production deploys are guarded:
+
+```bash
+make env-prod
+nano config/env/.env.prod
+make validate-env ENV_FILE=config/env/.env.prod
+make deploy-prod CONFIRM_PROD_DEPLOY=yes
+```
+
+Do not deploy with `config/env/*.example` files outside disposable local tests.
+
 ## Stop Infrastructure
 
 ```bash

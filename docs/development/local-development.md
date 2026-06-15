@@ -47,7 +47,7 @@ make up-full                  # infra + apps + Caddy reverse proxy
 
 ```bash
 # Node workspaces (worker and web have no external dependencies)
-npm install
+npm ci
 npm test
 
 # Spring Boot API

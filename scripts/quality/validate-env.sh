@@ -4,7 +4,7 @@
 #
 # Checks:
 #   1. The file exists.
-#   2. A minimal core set of keys is present.
+#   2. A minimal core set of runtime keys is present.
 #   3. No placeholder values (change_me / change-me) remain in REAL env files.
 #      (*.example files are allowed to contain placeholders.)
 #
@@ -27,11 +27,19 @@ fi
 
 echo "Validating env file: $ENV_FILE"
 
-# Minimal core keys every runtime needs. JWT secret accepts either spelling.
+# Minimal runtime keys required by the default Compose stack.
 REQUIRED_KEYS=(
   "POSTGRES_DB"
   "POSTGRES_USER"
   "POSTGRES_PASSWORD"
+  "S3_BUCKET"
+  "S3_ACCESS_KEY"
+  "S3_SECRET_KEY"
+  "N8N_HOST"
+  "N8N_PORT"
+  "N8N_BASIC_AUTH_USER"
+  "N8N_BASIC_AUTH_PASSWORD"
+  "JWT_SECRET"
 )
 
 errors=0
@@ -42,12 +50,6 @@ for key in "${REQUIRED_KEYS[@]}"; do
     errors=$((errors + 1))
   fi
 done
-
-# Require some JWT secret to be present (either JWT_SECRET or JWT_* signing key).
-if ! grep -qE "^JWT_SECRET=|^JWT_SIGNING_KEY=" "$ENV_FILE"; then
-  echo "  MISSING a JWT secret (JWT_SECRET or JWT_SIGNING_KEY)"
-  errors=$((errors + 1))
-fi
 
 # Placeholder check only for real (non-example) files.
 case "$ENV_FILE" in

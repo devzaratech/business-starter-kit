@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.1 - Stabilization checkpoint
+
+- Refreshed the root npm lockfile so `npm ci` works in clean environments.
+- Made deployment scripts require real runtime env files instead of `.example` templates by default.
+- Added n8n runtime variables to every environment template.
+- Added environment bootstrap Makefile targets and a guarded production deploy target.
+- Renamed the potentially sensitive example to a generic operations dashboard.
+- Strengthened sanitization and environment validation checks.
+
+
 All notable changes to this starter kit are documented here. This project follows
 a pragmatic, incremental approach: small, coherent, well-described changes.
 
