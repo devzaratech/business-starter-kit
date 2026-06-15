@@ -55,6 +55,24 @@ docker compose -f infra/compose/docker-compose.vps.yml up -d
 ```
 
 
+## Supabase Studio Workflow
+
+Supabase Studio is managed through environment profiles. Do not edit `supabase/config.toml` manually when switching environments.
+
+```bash
+make supabase-start ENV=dev
+make supabase-studio
+make supabase-studio-disable ENV=dev
+```
+
+Production Studio is disabled by default and requires explicit confirmation before it can be enabled:
+
+```bash
+CONFIRM_SUPABASE_PROD_STUDIO=yes make supabase-studio-enable ENV=prod
+```
+
+See [Supabase Studio](docs/database/supabase-studio.md).
+
 ## Quality and Delivery
 
 Business Starter Kit includes CI/CD and unit testing scaffolding from day one.

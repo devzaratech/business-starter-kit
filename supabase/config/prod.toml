@@ -1,0 +1,41 @@
+# Supabase CLI configuration for the prod environment.
+# This file is a source profile. The active file is generated at supabase/config.toml.
+# Use: make supabase-start ENV=prod
+
+project_id = "business-starter-kit-prod"
+
+[api]
+enabled = true
+port = 55521
+schemas = ["public", "api", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 55522
+major_version = 16
+
+[studio]
+enabled = false
+port = 55523
+api_url = "http://127.0.0.1:55521"
+
+[inbucket]
+enabled = true
+port = 55524
+smtp_port = 55525
+pop3_port = 55526
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+[auth]
+enabled = true
+site_url = "https://app.example.com"
+additional_redirect_urls = ["https://app.example.com"]
+jwt_expiry = 3600
+enable_signup = true
+
+[edge_runtime]
+enabled = true

@@ -24,15 +24,17 @@ These are starter defaults, not a security boundary. If environments are deploye
 
 ## Supabase CLI Ports
 
-The Supabase CLI local profile uses the conventional local Supabase port range:
+Supabase CLI uses environment-specific port ranges so Local, Dev, QA, UAT, Staging and Prod profiles can coexist without manual reconfiguration.
 
-| Service | Port |
-|---|---:|
-| Supabase API | 54321 |
-| Supabase DB | 54322 |
-| Supabase Studio | 54323 |
-| Inbucket UI | 54324 |
-| Inbucket SMTP | 54325 |
-| Inbucket POP3 | 54326 |
+| Environment | API | DB | Studio | Inbucket UI | SMTP | POP3 | Studio Default |
+|---|---:|---:|---:|---:|---:|---:|---|
+| Local | 54321 | 54322 | 54323 | 54324 | 54325 | 54326 | Enabled |
+| Dev | 55121 | 55122 | 55123 | 55124 | 55125 | 55126 | Enabled |
+| QA | 55221 | 55222 | 55223 | 55224 | 55225 | 55226 | Enabled |
+| UAT | 55321 | 55322 | 55323 | 55324 | 55325 | 55326 | Enabled |
+| Staging | 55421 | 55422 | 55423 | 55424 | 55425 | 55426 | Disabled |
+| Prod | 55521 | 55522 | 55523 | 55524 | 55525 | 55526 | Disabled |
 
-Supabase Studio is intended for local/development workflows. Do not expose it publicly in production.
+Use `make supabase-start ENV=<env>` to generate the active `supabase/config.toml` from the selected profile. Supabase Studio can be enabled or disabled without editing TOML files manually.
+
+Production Studio is disabled by default. If it is enabled temporarily, it must be kept private through Tailscale, SSH tunneling, VPN or Cloudflare Access.

@@ -1,10 +1,14 @@
 SHELL := /bin/bash
 
 COMPOSE_VPS := infra/compose/docker-compose.vps.yml
+SUPABASE_ENV ?= local
+ifneq ($(origin ENV), undefined)
+SUPABASE_ENV := $(ENV)
+endif
 
 .PHONY: help init up up-full down logs ps build-images \
         test test-spring test-node validate-compose validate-env quality sonar \
-        env-local env-dev env-qa env-uat env-staging env-prod deploy-local deploy-dev deploy-qa deploy-uat deploy-staging deploy-prod supabase-start supabase-stop supabase-status supabase-db-reset supabase-studio
+        env-local env-dev env-qa env-uat env-staging env-prod deploy-local deploy-dev deploy-qa deploy-uat deploy-staging deploy-prod supabase-use supabase-start supabase-stop supabase-status supabase-db-reset supabase-studio supabase-studio-enable supabase-studio-disable
 
 help:
 	@echo "Business Starter Kit commands"
@@ -25,8 +29,11 @@ help:
 	@echo "  make sonar              Run SonarQube analysis (skips if not configured)"
 	@echo "  make deploy-dev         Restart the Dev environment stack"
 	@echo "  make deploy-prod        Restart Prod only with CONFIRM_PROD_DEPLOY=yes"
-	@echo "  make supabase-start     Start Supabase CLI local stack, including Studio"
-	@echo "  make supabase-studio    Print the local Supabase Studio URL"
+	@echo "  make supabase-use ENV=dev              Generate Supabase config for an environment"
+	@echo "  make supabase-start ENV=dev            Start Supabase CLI stack for an environment"
+	@echo "  make supabase-studio                   Print the active Supabase Studio URL"
+	@echo "  make supabase-studio-enable ENV=prod   Enable Studio in active config; prod requires CONFIRM_SUPABASE_PROD_STUDIO=yes"
+	@echo "  make supabase-studio-disable ENV=prod  Disable Studio in active config"
 
 init:
 	@test -f .env || cp .env.example .env
@@ -119,8 +126,11 @@ deploy-prod:
 	./scripts/deploy/restart-compose.sh prod
 
 
+supabase-use:
+	./scripts/supabase/use-env.sh $(SUPABASE_ENV)
+
 supabase-start:
-	supabase start
+	./scripts/supabase/start.sh $(SUPABASE_ENV)
 
 supabase-stop:
 	supabase stop
@@ -129,7 +139,14 @@ supabase-status:
 	supabase status
 
 supabase-db-reset:
+	./scripts/supabase/use-env.sh $(SUPABASE_ENV)
 	supabase db reset
 
 supabase-studio:
-	@echo "Supabase Studio: http://127.0.0.1:54323"
+	./scripts/supabase/studio-url.sh
+
+supabase-studio-enable:
+	./scripts/supabase/toggle-studio.sh enable $(SUPABASE_ENV)
+
+supabase-studio-disable:
+	./scripts/supabase/toggle-studio.sh disable $(SUPABASE_ENV)

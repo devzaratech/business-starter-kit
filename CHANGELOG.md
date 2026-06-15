@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.1 - Supabase environment profile checkpoint
+
+- Added Supabase CLI source profiles for Local, Dev, QA, UAT, Staging and Prod.
+- Made `supabase/config.toml` an active generated profile selected through Makefile/scripts.
+- Added Supabase Studio enable/disable commands, including explicit production confirmation.
+- Aligned Supabase CLI ports with the environment convention.
+- Documented production Studio safety rules and environment switching workflow.
+
 ## 0.2.1 - Stabilization checkpoint
 
 - Refreshed the root npm lockfile so `npm ci` works in clean environments.

@@ -1,0 +1,41 @@
+# Supabase CLI configuration for the uat environment.
+# This file is a source profile. The active file is generated at supabase/config.toml.
+# Use: make supabase-start ENV=uat
+
+project_id = "business-starter-kit-uat"
+
+[api]
+enabled = true
+port = 55321
+schemas = ["public", "api", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 55322
+major_version = 16
+
+[studio]
+enabled = true
+port = 55323
+api_url = "http://127.0.0.1:55321"
+
+[inbucket]
+enabled = true
+port = 55324
+smtp_port = 55325
+pop3_port = 55326
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+[auth]
+enabled = true
+site_url = "http://127.0.0.1:13080"
+additional_redirect_urls = ["http://127.0.0.1:13080", "http://127.0.0.1:3000"]
+jwt_expiry = 3600
+enable_signup = true
+
+[edge_runtime]
+enabled = true
