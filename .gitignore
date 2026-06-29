@@ -56,3 +56,6 @@ n8n-data/
 # Temporary files
 tmp/
 .cache/
+*.bak.*
+*.final.tar.gz
+*.sha256
