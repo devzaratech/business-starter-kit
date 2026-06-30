@@ -3,14 +3,7 @@ set -u
 
 FAIL=0
 
-ensure_network() {
-  if docker network inspect bsk-edge >/dev/null 2>&1; then
-    echo "OK: bsk-edge exists"
-  else
-    echo "Creating bsk-edge..."
-    docker network create bsk-edge >/dev/null || FAIL=1
-  fi
-}
+docker network inspect bsk-edge >/dev/null 2>&1 || docker network create bsk-edge >/dev/null
 
 connect_alias_if_container_exists() {
   container="$1"
@@ -34,8 +27,6 @@ connect_alias_if_container_exists() {
     FAIL=1
   fi
 }
-
-ensure_network
 
 connect_alias_if_container_exists bsk-web bsk-dev-web
 connect_alias_if_container_exists bsk-api-spring bsk-dev-api-spring
