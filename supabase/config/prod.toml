@@ -40,3 +40,9 @@ enable_signup = true
 
 [edge_runtime]
 enabled = true
+
+inspector_port = 55128
+[analytics]
+enabled = true
+port = 55127
+backend = "postgres"
