@@ -175,6 +175,31 @@ services:
     networks:
       - bsk-internal
 
+  api-fastapi:
+    build:
+      context: ../../apps/api-fastapi
+    image: bsk/api-fastapi:${IMAGE_TAG:-local}
+    container_name: bsk-api-fastapi
+    restart: unless-stopped
+    profiles: ["apps"]
+    environment:
+      PORT: 8000
+    networks:
+      - bsk-internal
+
+
+  api-php:
+    build:
+      context: ../../apps/api-php
+    image: bsk/api-php:${IMAGE_TAG:-local}
+    container_name: bsk-api-php
+    restart: unless-stopped
+    profiles: ["php"]
+    environment:
+      APP_ENV: ${APP_ENV:-dev}
+    networks:
+      - bsk-internal
+
   worker:
     build:
       context: ../../apps/worker

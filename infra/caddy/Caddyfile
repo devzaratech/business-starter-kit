@@ -26,6 +26,15 @@ bsk-dev.devzaratech.xyz {
 		}
 	}
 
+	handle_path /api/php/* {
+		reverse_proxy api-php:8000 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-Proto {scheme}
+			header_up Host {host}
+		}
+	}
+
 	handle_path /api/* {
 		reverse_proxy api-spring:8080 {
 			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
