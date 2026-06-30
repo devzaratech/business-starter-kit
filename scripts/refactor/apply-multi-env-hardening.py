@@ -10,9 +10,9 @@ ENV_SPECS = {
         "postgres": "5432",
         "redis": "6379",
         "n8n": "5678",
-        "seaweed_master": "19333",
-        "seaweed_filer": "18888",
-        "seaweed_s3": "8333",
+        "seaweed_master": "10933",
+        "seaweed_filer": "10888",
+        "seaweed_s3": "10833",
     },
     "dev": {
         "compose_project": "bsk-dev",

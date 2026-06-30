@@ -30,6 +30,9 @@ services:
       - bsk-mongodb
 
 networks:
+  bsk-edge:
+    external: true
+    name: bsk-edge
   bsk-mongodb:
     driver: bridge
 

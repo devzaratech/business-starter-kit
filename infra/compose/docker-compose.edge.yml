@@ -1,0 +1,25 @@
+name: bsk-edge
+
+services:
+  reverse-proxy:
+    image: caddy:2-alpine
+    container_name: bsk-edge-reverse-proxy
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:${PUBLIC_HTTP_PORT:-80}:80"
+      - "0.0.0.0:${PUBLIC_HTTPS_PORT:-443}:443"
+    volumes:
+      - ../caddy/Caddyfile.multi-env:/etc/caddy/Caddyfile:ro
+      - bsk-edge-caddy-data:/data
+      - bsk-edge-caddy-config:/config
+    networks:
+      - bsk-edge
+
+networks:
+  bsk-edge:
+    external: true
+    name: bsk-edge
+
+volumes:
+  bsk-edge-caddy-data:
+  bsk-edge-caddy-config:

@@ -47,6 +47,9 @@ services:
       - bsk-postgrest
 
 networks:
+  bsk-edge:
+    external: true
+    name: bsk-edge
   bsk-postgrest:
     driver: bridge
 

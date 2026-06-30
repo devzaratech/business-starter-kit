@@ -166,6 +166,7 @@ services:
       retries: 3
       start_period: 40s
     networks:
+      - bsk-edge
       - bsk-internal
 
   api-node:
@@ -178,6 +179,7 @@ services:
     environment:
       PORT: 3001
     networks:
+      - bsk-edge
       - bsk-internal
 
   api-fastapi:
@@ -190,6 +192,7 @@ services:
     environment:
       PORT: 8000
     networks:
+      - bsk-edge
       - bsk-internal
 
 
@@ -203,6 +206,7 @@ services:
     environment:
       APP_ENV: ${APP_ENV:-dev}
     networks:
+      - bsk-edge
       - bsk-internal
 
   worker:
@@ -225,13 +229,15 @@ services:
     restart: unless-stopped
     profiles: ["apps"]
     networks:
+      - bsk-edge
       - bsk-internal
 
   reverse-proxy:
+    profiles:
+      - single-env-proxy
     image: caddy:2-alpine
     container_name: bsk-${APP_ENV:-dev}-reverse-proxy
     restart: unless-stopped
-    profiles: ["apps"]
     ports:
       - "${REVERSE_PROXY_HTTP_BIND:-0.0.0.0}:${REVERSE_PROXY_HTTP_PORT:-80}:80"
       - "${REVERSE_PROXY_HTTPS_BIND:-0.0.0.0}:${REVERSE_PROXY_HTTPS_PORT:-443}:443"
@@ -244,9 +250,13 @@ services:
       - api-spring
       - api-node
     networks:
+      - bsk-edge
       - bsk-internal
 
 networks:
+  bsk-edge:
+    external: true
+    name: bsk-edge
   bsk-internal:
     driver: bridge
 
