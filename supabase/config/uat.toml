@@ -19,7 +19,7 @@ shadow_port = 35120
 [studio]
 enabled = true
 port = 35123
-api_url = "http://127.0.0.1:55321"
+api_url = "http://127.0.0.1:35121"
 
 [inbucket]
 enabled = true

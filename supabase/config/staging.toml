@@ -17,9 +17,9 @@ major_version = 15
 
 shadow_port = 45120
 [studio]
-enabled = false
+enabled = true
 port = 45123
-api_url = "http://127.0.0.1:55421"
+api_url = "http://127.0.0.1:45121"
 
 [inbucket]
 enabled = true
