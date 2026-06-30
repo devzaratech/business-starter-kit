@@ -6,25 +6,26 @@ project_id = "business-starter-kit-qa"
 
 [api]
 enabled = true
-port = 55221
+port = 25121
 schemas = ["public", "api", "storage", "graphql_public"]
 extra_search_path = ["public", "extensions"]
 max_rows = 1000
 
 [db]
-port = 55222
+port = 25122
 major_version = 15
 
+shadow_port = 25120
 [studio]
 enabled = true
-port = 55223
+port = 25123
 api_url = "http://127.0.0.1:55221"
 
 [inbucket]
 enabled = true
-port = 55224
-smtp_port = 55225
-pop3_port = 55226
+port = 25124
+smtp_port = 25125
+pop3_port = 25126
 
 [storage]
 enabled = true

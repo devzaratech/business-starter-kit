@@ -13,7 +13,7 @@ name: business-starter-postgrest
 services:
   postgrest-db:
     image: postgres:16-alpine
-    container_name: bsk-postgrest-db
+    container_name: bsk-${APP_ENV:-dev}-postgrest-db
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGREST_DB:-business_starter}
@@ -31,7 +31,7 @@ services:
 
   postgrest:
     image: postgrest/postgrest:v12.2.3
-    container_name: bsk-postgrest
+    container_name: bsk-${APP_ENV:-dev}-postgrest
     restart: unless-stopped
     environment:
       PGRST_DB_URI: postgres://${POSTGREST_DB_USER:-business_starter}:${POSTGREST_DB_PASSWORD:-change_me}@postgrest-db:5432/${POSTGREST_DB:-business_starter}

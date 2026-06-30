@@ -11,7 +11,7 @@ name: business-starter-mongodb
 services:
   mongodb:
     image: mongo:7
-    container_name: bsk-mongodb
+    container_name: bsk-${APP_ENV:-dev}-mongodb
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER:-business_starter}

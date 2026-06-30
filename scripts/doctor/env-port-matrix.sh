@@ -5,8 +5,8 @@ ROOT_DIR="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 cd "$ROOT_DIR"
 
 ENVS=(local dev qa uat staging prod vps)
-
 TMP_DIR="$(mktemp -d)"
+
 PORTS_FILE="$TMP_DIR/ports.tsv"
 CONTAINERS_FILE="$TMP_DIR/containers.tsv"
 SERVICES_FILE="$TMP_DIR/services.tsv"
@@ -20,19 +20,12 @@ echo
 
 for ENV in "${ENVS[@]}"; do
   COMPOSE_FILE="infra/compose/docker-compose.${ENV}.yml"
+  [ -f "$COMPOSE_FILE" ] || continue
 
-  if [ ! -f "$COMPOSE_FILE" ]; then
-    continue
-  fi
-
-  ENV_FILE="config/env/.env.${ENV}"
-  if [ ! -f "$ENV_FILE" ]; then
-    ENV_FILE="config/env/.env.${ENV}.example"
-  fi
-
-  if [ ! -f "$ENV_FILE" ]; then
-    ENV_FILE=".env.example"
-  fi
+  ENV_FILE="config/env/.env.${ENV}.example"
+  [ "$ENV" = "dev" ] && ENV_FILE="config/env/.env.dev"
+  [ "$ENV" = "vps" ] && ENV_FILE=".env.example"
+  [ -f "$ENV_FILE" ] || ENV_FILE=".env.example"
 
   OUT="$TMP_DIR/${ENV}.yml"
 
@@ -40,7 +33,12 @@ for ENV in "${ENVS[@]}"; do
   echo "compose: $COMPOSE_FILE"
   echo "envfile: $ENV_FILE"
 
-  if ! docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" config > "$OUT" 2>"$TMP_DIR/${ENV}.err"; then
+  if ! docker compose \
+    --env-file "$ENV_FILE" \
+    -f "$COMPOSE_FILE" \
+    --profile apps \
+    --profile php \
+    config > "$OUT" 2>"$TMP_DIR/${ENV}.err"; then
     echo "ERROR: docker compose config failed for $ENV"
     cat "$TMP_DIR/${ENV}.err"
     echo
@@ -112,7 +110,7 @@ echo "== Services by environment =="
 column -t -s $'\t' "$SERVICES_FILE" 2>/dev/null || cat "$SERVICES_FILE"
 
 echo
-echo "== Published ports =="
+echo "== Published Docker Compose ports =="
 if [ -s "$PORTS_FILE" ]; then
   printf "ENV\tSERVICE\tHOST_IP\tHOST_PORT\tCONTAINER_PORT\tPROTO\n"
   column -t -s $'\t' "$PORTS_FILE" 2>/dev/null || cat "$PORTS_FILE"
@@ -130,7 +128,7 @@ else
 fi
 
 echo
-echo "== Duplicate published host ports across environments =="
+echo "== Duplicate published Docker host ports across environments =="
 if [ -s "$PORTS_FILE" ]; then
   awk -F'\t' '
     {
@@ -149,8 +147,6 @@ if [ -s "$PORTS_FILE" ]; then
       if (!found) print "No duplicate published host ports detected."
     }
   ' "$PORTS_FILE"
-else
-  echo "No published ports detected."
 fi
 
 echo
@@ -173,8 +169,6 @@ if [ -s "$CONTAINERS_FILE" ]; then
       if (!found) print "No duplicate fixed container names detected."
     }
   ' "$CONTAINERS_FILE"
-else
-  echo "No fixed container_name detected."
 fi
 
 echo
@@ -185,15 +179,46 @@ if [ -s "$PORTS_FILE" ]; then
       print "PUBLIC_BIND " $1 " / " $2 " -> " $3 ":" $4 " => " $5 "/" $6
     }
   ' "$PORTS_FILE" || true
-else
-  echo "No published ports detected."
 fi
 
 echo
+echo "== Supabase profile ports =="
+for env in local dev qa uat staging prod; do
+  cfg="supabase/config/${env}.toml"
+  [ -f "$cfg" ] || continue
+
+  get_port() {
+    section="$1"
+    key="$2"
+    awk -v section="$section" -v key="$key" '
+      $0 == "[" section "]" {inside=1; next}
+      /^\[/ {inside=0}
+      inside && $1 == key {
+        gsub(/"/, "", $3)
+        print $3
+        exit
+      }
+    ' "$cfg"
+  }
+
+  api="$(get_port api port)"
+  db="$(get_port db port)"
+  shadow="$(get_port db shadow_port)"
+  studio="$(get_port studio port)"
+  mailpit="$(get_port inbucket port)"
+  [ -z "$mailpit" ] && mailpit="$(get_port local_smtp port)"
+  analytics="$(get_port analytics port)"
+  pooler="$(get_port db.pooler port)"
+
+  printf "%-8s api=%-6s db=%-6s shadow=%-6s studio=%-6s mailpit=%-6s analytics=%-6s pooler=%-6s\n" \
+    "$env" "${api:-"-"}" "${db:-"-"}" "${shadow:-"-"}" "${studio:-"-"}" "${mailpit:-"-"}" "${analytics:-"-"}" "${pooler:-"-"}"
+done
+
+echo
 echo "== Recommended interpretation =="
-echo "- 0.0.0.0:80 and 0.0.0.0:443 are expected only for the public reverse proxy."
-echo "- Admin tools should bind to 127.0.0.1 only: n8n, Supabase Studio, Mailpit, SeaweedFS Master/Filer/S3, Postgres, Redis."
-echo "- Duplicate container_name values mean those environments cannot run simultaneously on the same Docker host."
-echo "- Duplicate host ports mean those environments cannot run simultaneously unless ports are parameterized per environment."
+echo "- Public reverse proxy is expected to bind 0.0.0.0:80 and 0.0.0.0:443 only."
+echo "- Admin tools should bind to 127.0.0.1 only."
+echo "- APIs should not publish host ports; Caddy should route to them through Docker networks."
+echo "- Duplicate container names mean environments cannot run simultaneously on one Docker host."
 
 rm -rf "$TMP_DIR"
