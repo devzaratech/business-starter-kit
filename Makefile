@@ -133,10 +133,10 @@ supabase-start:
 	./scripts/supabase/start.sh $(SUPABASE_ENV)
 
 supabase-stop:
-	supabase stop
+	./scripts/supabase/supabase-cli.sh stop
 
 supabase-status:
-	supabase status
+	./scripts/supabase/supabase-cli.sh status
 
 supabase-db-reset:
 	./scripts/supabase/use-env.sh $(SUPABASE_ENV)

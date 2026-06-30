@@ -59,3 +59,4 @@ tmp/
 *.bak.*
 *.final.tar.gz
 *.sha256
+supabase/.temp/

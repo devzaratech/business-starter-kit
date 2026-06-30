@@ -64,6 +64,8 @@ services:
     container_name: bsk-seaweed-master
     restart: unless-stopped
     command: "master -ip=seaweed-master -mdir=/data -volumeSizeLimitMB=1024"
+    ports:
+      - "${SEAWEED_MASTER_HOST_BIND:-127.0.0.1}:${SEAWEED_MASTER_HOST_PORT:-19333}:9333"
     volumes:
       - seaweed-master-data:/data
     networks:
@@ -86,6 +88,8 @@ services:
     container_name: bsk-seaweed-filer
     restart: unless-stopped
     command: "filer -master=seaweed-master:9333 -ip=seaweed-filer"
+    ports:
+      - "${SEAWEED_FILER_HOST_BIND:-127.0.0.1}:${SEAWEED_FILER_HOST_PORT:-18888}:8888"
     depends_on:
       - seaweed-master
       - seaweed-volume
