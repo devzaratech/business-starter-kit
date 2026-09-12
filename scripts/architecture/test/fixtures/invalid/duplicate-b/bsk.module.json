@@ -1,0 +1,7 @@
+{
+  "schemaVersion": "1.0",
+  "module": { "name": "duplicate-module", "version": "0.2.0", "kind": "capability", "visibility": "public", "freedomClass": "F1", "supportLevel": "GA", "license": "Apache-2.0" },
+  "compatibility": { "bskPlatform": "1.x" },
+  "dependencies": { "required": [], "optional": [], "forbiddenKinds": ["private-extension"] },
+  "capabilities": { "provides": [], "requires": [] }
+}

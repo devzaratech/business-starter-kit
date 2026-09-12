@@ -43,3 +43,20 @@ test('canonical schema declares the supported classifications', async () => {
   assert.deepEqual(schema.properties.module.properties.freedomClass.enum, ['F1', 'F2', 'F3']);
   assert.deepEqual(schema.properties.module.properties.supportLevel.enum, ['GA', 'Preview', 'Lab']);
 });
+
+import { discoverManifests } from '../lib/discover-manifests.mjs';
+
+const fixtureUrl = new URL('./fixtures/', import.meta.url);
+
+test('discovers bsk.module.json recursively', async () => {
+  const modules = await discoverManifests(new URL('valid/', fixtureUrl));
+  assert.equal(modules.length, 1);
+  assert.equal(modules[0].manifest.module.name, 'tenancy');
+});
+
+test('rejects duplicate module names', async () => {
+  await assert.rejects(
+    () => discoverManifests(new URL('invalid/', fixtureUrl)),
+    /duplicate module name: duplicate-module/
+  );
+});
