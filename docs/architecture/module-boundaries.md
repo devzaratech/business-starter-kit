@@ -26,7 +26,7 @@ Product modules own business-specific workflows:
 - CMS-backed portals
 - Vertical reporting
 
-## Rule
+## Fundamental rule
 
 Do not put customer-specific logic into the platform core.
 
@@ -35,10 +35,22 @@ Good: storage provider interface
 Bad: customer invoice upload workflow inside the core
 ```
 
-## Recommended Dependency Direction
+## Dependency direction
+
+The long-term Golden Path dependency direction is:
 
 ```txt
-Business Product → Optional Module → Platform Core
+Products → Profiles → Runtimes → Capabilities → Kernel → Contracts
 ```
 
-The core must not depend on a specific product.
+Adapters, deployment targets and private extensions live at the edges. Core kinds (`contract`, `kernel`, `capability`, compliance kernel and public extension contracts) must not depend on runtimes, adapters, deployment modules, applications, reference clients or private extensions.
+
+A public module must never depend on a private module.
+
+These rules are enforced by `npm run architecture:check` from `bsk.module.json` metadata rather than being documentation-only conventions.
+
+## Current physical layout
+
+The Foundation Guardrails checkpoint deliberately keeps the existing `apps/` and `packages/` directories in place. Module manifests classify the current code without pretending that the conceptual target layout has already been migrated.
+
+The core must not depend on a specific product, and a future product such as OpenFiscal must be able to consume equivalent public contracts without becoming part of BSK itself.
