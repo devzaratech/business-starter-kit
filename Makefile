@@ -7,7 +7,7 @@ SUPABASE_ENV := $(ENV)
 endif
 
 .PHONY: help init up up-full down logs ps build-images \
-        test test-spring test-node validate-compose validate-env quality sonar \
+        test test-spring test-node architecture-check validate-compose validate-env quality sonar \
         env-local env-dev env-qa env-uat env-staging env-prod deploy-local deploy-dev deploy-qa deploy-uat deploy-staging deploy-prod supabase-use supabase-start supabase-stop supabase-status supabase-db-reset supabase-studio supabase-studio-enable supabase-studio-disable
 
 help:
@@ -22,6 +22,7 @@ help:
 	@echo "  make test               Run all unit tests + Compose validation"
 	@echo "  make test-spring        Run Spring Boot tests"
 	@echo "  make test-node          Run Node/web/worker workspace tests"
+	@echo "  make architecture-check Validate BSK module manifests and dependency rules"
 	@echo "  make validate-compose   Validate Docker Compose files"
 	@echo "  make validate-env       Validate an env file (ENV_FILE=path, default .env)"
 	@echo "  make env-dev            Create config/env/.env.dev from its template if missing"
@@ -64,6 +65,9 @@ test-spring:
 test-node:
 	npm ci
 	npm test
+
+architecture-check:
+	npm run architecture:check
 
 validate-compose:
 	for file in infra/compose/docker-compose.*.yml; do \
