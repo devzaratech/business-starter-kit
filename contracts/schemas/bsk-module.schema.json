@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://business-starter-kit.dev/schemas/bsk-module.schema.json",
+  "title": "BSK Module Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "module", "compatibility", "dependencies", "capabilities"],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "module": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "kind", "visibility", "freedomClass", "supportLevel", "license"],
+      "properties": {
+        "name": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?$" },
+        "kind": {
+          "enum": [
+            "contract", "kernel", "capability", "runtime", "adapter", "profile",
+            "compliance-kernel", "compliance-pack", "observability", "conformance",
+            "deployment", "extension-contract", "application", "reference-client", "private-extension"
+          ]
+        },
+        "visibility": { "enum": ["public", "private"] },
+        "freedomClass": { "enum": ["F1", "F2", "F3"] },
+        "supportLevel": { "enum": ["GA", "Preview", "Lab"] },
+        "license": { "type": "string", "minLength": 1 }
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bskPlatform"],
+      "properties": {
+        "bskPlatform": { "type": "string", "minLength": 1 }
+      }
+    },
+    "dependencies": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "optional", "forbiddenKinds"],
+      "properties": {
+        "required": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+        "optional": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+        "forbiddenKinds": { "type": "array", "uniqueItems": true, "items": { "type": "string" } }
+      }
+    },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provides", "requires"],
+      "properties": {
+        "provides": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+        "requires": { "type": "array", "uniqueItems": true, "items": { "type": "string" } }
+      }
+    }
+  }
+}
