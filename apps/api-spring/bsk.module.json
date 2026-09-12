@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0",
+  "module": {
+    "name": "api-spring",
+    "version": "0.1.0-SNAPSHOT",
+    "kind": "runtime",
+    "visibility": "public",
+    "freedomClass": "F1",
+    "supportLevel": "Preview",
+    "license": "Apache-2.0"
+  },
+  "compatibility": { "bskPlatform": "1.x" },
+  "dependencies": { "required": [], "optional": [], "forbiddenKinds": ["private-extension"] },
+  "capabilities": { "provides": ["runtime.http.java.spring", "runtime.health"], "requires": [] }
+}
