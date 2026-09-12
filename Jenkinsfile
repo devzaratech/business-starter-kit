@@ -59,6 +59,13 @@ pipeline {
             }
         }
 
+        stage('Architecture guardrails') {
+            steps {
+                sh 'npm run architecture:test'
+                sh 'npm run architecture:check'
+            }
+        }
+
         stage('Spring Boot API tests') {
             steps {
                 dir('apps/api-spring') {
