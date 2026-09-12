@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.4.0 - Golden Path foundation guardrails
+
+- Adopted Apache-2.0 for the BSK core.
+- Added the canonical `bsk.module.json` contract and BSK platform identity metadata.
+- Added manifest parsing, recursive discovery and duplicate module detection.
+- Added executable dependency-direction rules, including the public-core-to-private dependency prohibition.
+- Added governed Preview manifests for `core-domain`, `tenancy`, `auth-rbac` and `audit`.
+- Catalogued existing Spring, Node, FastAPI, PHP, worker and React reference runtimes conservatively as Preview.
+- Added `npm run architecture:test`, `npm run architecture:check` and `make architecture-check`.
+- Added GitHub Actions and Jenkins architecture guardrails using the same vendor-neutral commands.
+- Added regression coverage so architecture test fixtures are excluded from production repository scans.
+- Documented the Golden Path dependency direction and open-core licensing invariant.
+- Deliberately kept the existing physical `apps/` and `packages/` layout unchanged; this checkpoint adds governance rather than a repository migration.
+
 ## 0.3.1 - Supabase environment profile checkpoint
 
 - Added Supabase CLI source profiles for Local, Dev, QA, UAT, Staging and Prod.
