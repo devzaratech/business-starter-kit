@@ -24,6 +24,25 @@ n8n Automation Workflows
 Storage Providers / ERP / CMS / External APIs
 ```
 
+The diagram above describes the current runnable stack. It is not the dependency model for the long-term Golden Path.
+
+## Golden Path governance
+
+Governed modules carry a `bsk.module.json` manifest. The first executable dependency direction is:
+
+```txt
+Products → Profiles → Runtimes → Capabilities → Kernel → Contracts
+```
+
+The initial Foundation Guardrails checkpoint catalogs the existing `apps/` and selected `packages/` in place. It does not physically migrate the repository into the final conceptual directory model.
+
+Architecture rules are executable through:
+
+```bash
+npm run architecture:test
+npm run architecture:check
+```
+
 ## Core Platform Capabilities
 
 - Authentication
@@ -36,6 +55,12 @@ Storage Providers / ERP / CMS / External APIs
 - Configuration profiles
 - Deployment profiles
 
+The current governed core seed is intentionally limited to `core-domain`, `tenancy`, `auth-rbac` and `audit`. Other existing packages remain outside the first governed checkpoint until their contracts and conformance expectations are explicitly defined.
+
+## Runtime strategy
+
+Current runnable/reference runtimes include Spring Boot, Node/Express, FastAPI, PHP, a Node worker and a React reference client. They are classified as `Preview`; being present and runnable does not imply Golden Path conformance or GA support.
+
 ## Provider Strategy
 
 Providers must be implemented behind interfaces and adapters.
@@ -46,3 +71,7 @@ Examples:
 - Database: PostgreSQL canonical, Supabase/PostgREST optional, MongoDB optional
 - Automation: n8n workflow profile
 - Cloud: VPS, AWS, Azure, GCP
+
+## Open-core rule
+
+The BSK core is Apache-2.0 / F1. Future private or vendor-constrained modules must declare their own license and Freedom Class, and the public core must never depend on them.
