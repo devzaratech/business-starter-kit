@@ -23,3 +23,29 @@ test('repository npm config uses the public registry and replaces lockfile regis
     '.npmrc must replace registry hosts recorded by mirrors/proxies',
   );
 });
+
+test('package-lock registry URLs do not depend on private mirrors', async () => {
+  const lockfile = JSON.parse(await readFile(resolve(root, 'package-lock.json'), 'utf8'));
+  const offenders = [];
+
+  for (const [location, metadata] of Object.entries(lockfile.packages ?? {})) {
+    const resolved = metadata?.resolved;
+    if (typeof resolved !== 'string' || !resolved.startsWith('http')) continue;
+
+    const url = new URL(resolved);
+    const privateHost = url.hostname === 'localhost'
+      || url.hostname === '127.0.0.1'
+      || url.hostname.includes('.internal.');
+    const mirrorPath = url.pathname.includes('/artifactory/api/npm/npm-public/');
+
+    if (privateHost || mirrorPath) {
+      offenders.push(`${location}: ${resolved}`);
+    }
+  }
+
+  assert.deepEqual(
+    offenders,
+    [],
+    `package-lock.json contains non-portable registry URLs:\n${offenders.join('\n')}`,
+  );
+});
