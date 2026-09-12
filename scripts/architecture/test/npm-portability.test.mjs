@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { normalizeResolvedUrl } from '../../quality/normalize-npm-lockfile.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '../../..');
@@ -22,6 +23,18 @@ test('repository npm config uses the public registry and replaces lockfile regis
     lines.includes('replace-registry-host=always'),
     '.npmrc must replace registry hosts recorded by mirrors/proxies',
   );
+});
+
+test('lockfile normalizer rewrites only the known private mirror prefix', () => {
+  assert.equal(
+    normalizeResolvedUrl('https://packages.applied-caas-gateway1.internal.api.openai.org/artifactory/api/npm/npm-public/vite/-/vite-5.4.21.tgz'),
+    'https://registry.npmjs.org/vite/-/vite-5.4.21.tgz',
+  );
+  assert.equal(
+    normalizeResolvedUrl('https://registry.npmjs.org/express/-/express-4.22.2.tgz'),
+    'https://registry.npmjs.org/express/-/express-4.22.2.tgz',
+  );
+  assert.equal(normalizeResolvedUrl('apps/api-node'), 'apps/api-node');
 });
 
 test('package-lock registry URLs do not depend on private mirrors', async () => {
