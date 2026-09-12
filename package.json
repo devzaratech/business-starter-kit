@@ -13,6 +13,8 @@
     "test:node": "npm --workspace @business-starter-kit/api-node run test",
     "test:web": "npm --workspace @business-starter-kit/web run test",
     "test:worker": "npm --workspace @business-starter-kit/worker run test",
+    "architecture:test": "node --test scripts/architecture/test/*.test.mjs",
+    "architecture:check": "node scripts/architecture/check.mjs --root .",
     "build": "npm run build --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present"
   },
