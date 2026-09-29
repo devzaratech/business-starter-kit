@@ -47,3 +47,23 @@ test('architecture:test uses native discovery without shell wildcard expansion',
   const pkg = JSON.parse(await readFile(new URL('../../../package.json', import.meta.url), 'utf8'));
   assert.equal(pkg.scripts['architecture:test'], 'cd scripts/architecture && node --test');
 });
+
+test('CI and local quality gates run the real env-aware infrastructure tests', async () => {
+  const root = fileURLToPath(new URL('../../../', import.meta.url));
+  const pkg = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
+  assert.equal(pkg.scripts['infrastructure:test'], 'cd scripts/quality && node --test');
+
+  for (const file of [
+    '.github/workflows/ci.yml',
+    'Jenkinsfile',
+    'Makefile',
+    'scripts/quality/run-all-tests.sh'
+  ]) {
+    const pipeline = await readFile(resolve(root, file), 'utf8');
+    assert.match(pipeline, /npm run infrastructure:test/, `${file} must run real-input infrastructure tests`);
+  }
+
+  const githubCi = await readFile(resolve(root, '.github/workflows/ci.yml'), 'utf8');
+  const composeJob = githubCi.split('  docker-compose-validation:')[1]?.split('  sonarqube:')[0] ?? '';
+  assert.match(composeJob, /node-version: '20'/);
+});

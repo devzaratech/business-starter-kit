@@ -13,11 +13,8 @@ npm ci
 echo "Running Node workspace tests..."
 npm test
 
-echo "Validating Docker Compose files..."
-for file in infra/compose/docker-compose.*.yml; do
-  echo "Validating $file"
-  docker compose -f "$file" config >/dev/null
-done
+echo "Validating environment configuration and safety gates..."
+npm run infrastructure:test
 
 echo "Running optional SonarQube analysis (skipped if not configured)..."
 ./scripts/quality/run-sonar-scan.sh

@@ -96,15 +96,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Validate VPS compose file
-        run: docker compose -f infra/compose/docker-compose.vps.yml config
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-      - name: Validate environment compose files
-        run: |
-          for file in infra/compose/docker-compose.*.yml; do
-            echo "Validating $file"
-            docker compose -f "$file" config >/dev/null
-          done
+      - name: Validate environment configuration and safety gates
+        run: npm run infrastructure:test
 
   sonarqube:
     name: SonarQube analysis (optional)

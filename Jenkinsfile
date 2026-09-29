@@ -84,12 +84,7 @@ pipeline {
 
         stage('Docker Compose validation') {
             steps {
-                sh '''
-                    for file in infra/compose/docker-compose.*.yml; do
-                        echo "Validating $file"
-                        docker compose -f "$file" config >/dev/null
-                    done
-                '''
+                sh 'npm run infrastructure:test'
             }
         }
 

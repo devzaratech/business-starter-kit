@@ -70,10 +70,7 @@ architecture-check:
 	npm run architecture:check
 
 validate-compose:
-	for file in infra/compose/docker-compose.*.yml; do \
-		echo "Validating $$file"; \
-		docker compose -f "$$file" config >/dev/null; \
-	done
+	npm run infrastructure:test
 
 validate-env:
 	./scripts/quality/validate-env.sh $(ENV_FILE)
