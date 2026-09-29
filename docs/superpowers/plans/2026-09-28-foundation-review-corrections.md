@@ -70,7 +70,7 @@ constraints, and canonical JSON Schema validation.
 - [x] Run full architecture, npm workspace tests/build, Maven, Compose,
   normalization and diff checks. Record commands and results below.
 - [x] Obtain fresh independent review; address any verified regressions by TDD.
-- [ ] Commit/push corrections to PR #1 and inspect fresh CI. Do not merge.
+- [x] Commit/push corrections to PR #1 and inspect fresh CI. Do not merge.
 
 ## Execution evidence
 
@@ -174,6 +174,21 @@ locally. Manifest validation does not claim source-import enforcement, general
 cycle detection, runtime conformance or implemented business capabilities.
 Remote CI evidence will be reported against the pushed commit; no merge is
 authorized.
+
+### Fresh GitHub Actions verification
+
+Correction commit `680910ffa4f76ae13d4c0bd4b07f1b019b7134e3` triggered a
+`pull_request` run against `chore/multi-env-hardening`:
+[CI run 36559025306](https://github.com/devzaratech/business-starter-kit/actions/runs/36559025306).
+It completed successfully on 2026-09-29 at 11:01:06 UTC. Both Ubuntu and Windows
+Node 20 architecture jobs passed, as did Spring tests, Node/workspace tests and
+build, Compose validation and the quality gate. The optional SonarQube job
+succeeded by detecting absent configuration and skipping the analysis step;
+this does not represent a completed Sonar scan. The PR remains open and unmerged.
+
+This final execution-record update changes documentation only. Any subsequent
+CI run for that documentation commit is reported in the conversation rather
+than generating another self-referential evidence commit.
 
 ### Changed files
 
