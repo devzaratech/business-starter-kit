@@ -24,6 +24,25 @@ n8n Automation Workflows
 Storage Providers / ERP / CMS / External APIs
 ```
 
+The diagram above describes the current runnable stack. It is not the dependency model for the long-term Golden Path.
+
+## Golden Path governance
+
+Governed modules carry a `bsk.module.json` manifest. The first executable dependency direction is:
+
+```txt
+Products → Profiles → Runtimes → Capabilities → Kernel → Contracts
+```
+
+The initial Foundation Guardrails checkpoint catalogs the existing `apps/` and selected `packages/` in place. It does not physically migrate the repository into the final conceptual directory model.
+
+Architecture rules are executable through:
+
+```bash
+npm run architecture:test
+npm run architecture:check
+```
+
 ## Core Platform Capabilities
 
 - Authentication
@@ -36,6 +55,12 @@ Storage Providers / ERP / CMS / External APIs
 - Configuration profiles
 - Deployment profiles
 
+The current governed core seed is intentionally limited to `core-domain`, `tenancy`, `auth-rbac` and `audit`. Other existing packages remain outside the first governed checkpoint until their contracts and conformance expectations are explicitly defined.
+
+## Runtime strategy
+
+Current runnable/reference runtimes include Spring Boot, Node/Express, FastAPI, PHP, a Node worker and a React reference client. They are classified as `Preview`; being present and runnable does not imply Golden Path conformance or GA support.
+
 ## Provider Strategy
 
 Providers must be implemented behind interfaces and adapters.
@@ -46,3 +71,12 @@ Examples:
 - Database: PostgreSQL canonical, Supabase/PostgREST optional, MongoDB optional
 - Automation: n8n workflow profile
 - Cloud: VPS, AWS, Azure, GCP
+
+## Open-core rule
+
+The BSK core is Apache-2.0 / F1. Public modules must never depend on private
+modules. An F1 supported required path must never require F2/F3. Optional public
+integrations may cross Freedom Classes only within the explicit
+[dependency policy](module-boundaries.md#explicit-edge-policy); the core still
+cannot depend on runtime/provider implementations. Each module must declare
+its actual license independently of visibility and maturity.

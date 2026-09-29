@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0",
+  "module": {
+    "name": "web-react",
+    "version": "0.1.0",
+    "kind": "reference-client",
+    "visibility": "public",
+    "freedomClass": "F1",
+    "supportLevel": "Preview",
+    "license": "Apache-2.0"
+  },
+  "compatibility": { "bskPlatform": "1.x" },
+  "dependencies": { "required": [], "optional": [], "forbiddenKinds": ["private-extension"] },
+  "capabilities": { "provides": ["reference-client.react"], "requires": ["http.contract"] }
+}

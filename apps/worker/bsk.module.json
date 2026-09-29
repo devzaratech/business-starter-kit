@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0",
+  "module": {
+    "name": "worker-node",
+    "version": "0.1.0",
+    "kind": "runtime",
+    "visibility": "public",
+    "freedomClass": "F1",
+    "supportLevel": "Preview",
+    "license": "Apache-2.0"
+  },
+  "compatibility": { "bskPlatform": "1.x" },
+  "dependencies": { "required": [], "optional": [], "forbiddenKinds": ["private-extension"] },
+  "capabilities": { "provides": ["runtime.worker.node"], "requires": [] }
+}
