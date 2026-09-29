@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
@@ -33,7 +34,7 @@ test('repository architecture check ignores test fixtures', async () => {
     writeFile(join(duplicateB, 'bsk.module.json'), text)
   ]);
 
-  const checker = resolve('scripts/architecture/check.mjs');
+  const checker = fileURLToPath(new URL('../check.mjs', import.meta.url));
   const { stdout } = await execFileAsync(process.execPath, [checker, '--root', root]);
   assert.match(stdout, /Architecture check passed: 1 module\(s\)/);
 });

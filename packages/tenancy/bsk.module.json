@@ -11,12 +11,12 @@
   },
   "compatibility": { "bskPlatform": "1.x" },
   "dependencies": {
-    "required": ["core-domain"],
+    "required": [],
     "optional": [],
     "forbiddenKinds": ["runtime", "adapter", "deployment", "application", "reference-client", "private-extension"]
   },
   "capabilities": {
-    "provides": ["tenancy.context", "tenancy.resolution"],
-    "requires": ["core.identifiers"]
+    "provides": [],
+    "requires": []
   }
 }

@@ -19,3 +19,17 @@ test('core seed manifests exist and are public F1 Apache-2.0 Preview modules', a
 
   assert.deepEqual(validateDependencyGraph(modules), []);
 });
+
+test('placeholder core manifests do not advertise unimplemented dependencies or capabilities', async () => {
+  const modules = await discoverManifests(new URL('../../../packages/', import.meta.url));
+  for (const { manifest } of modules) {
+    const name = manifest.module.name;
+    assert.deepEqual(manifest.dependencies.required, [], `${name}: required`);
+    assert.deepEqual(manifest.dependencies.optional, [], `${name}: optional`);
+    assert.deepEqual(manifest.capabilities.provides, [], `${name}: provides`);
+    assert.deepEqual(manifest.capabilities.requires, [], `${name}: requires`);
+    for (const kind of ['runtime', 'adapter', 'deployment', 'application', 'reference-client', 'private-extension']) {
+      assert.ok(manifest.dependencies.forbiddenKinds.includes(kind), `${name} still forbids ${kind}`);
+    }
+  }
+});

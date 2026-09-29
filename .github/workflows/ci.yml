@@ -3,6 +3,7 @@ name: CI
 on:
   pull_request:
     branches:
+      - chore/multi-env-hardening
       - main
       - develop
       - release/**
@@ -24,7 +25,10 @@ concurrency:
 jobs:
   architecture-guardrails:
     name: Architecture guardrails
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -33,6 +37,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+
+      - name: Install locked architecture dependencies
+        run: npm ci --ignore-scripts
 
       - name: Run architecture tests
         run: npm run architecture:test

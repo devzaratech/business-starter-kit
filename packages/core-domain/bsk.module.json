@@ -16,7 +16,7 @@
     "forbiddenKinds": ["runtime", "adapter", "deployment", "application", "reference-client", "private-extension"]
   },
   "capabilities": {
-    "provides": ["core.identifiers", "core.errors", "core.validation"],
+    "provides": [],
     "requires": []
   }
 }

@@ -74,4 +74,9 @@ Examples:
 
 ## Open-core rule
 
-The BSK core is Apache-2.0 / F1. Future private or vendor-constrained modules must declare their own license and Freedom Class, and the public core must never depend on them.
+The BSK core is Apache-2.0 / F1. Public modules must never depend on private
+modules. An F1 supported required path must never require F2/F3. Optional public
+integrations may cross Freedom Classes only within the explicit
+[dependency policy](module-boundaries.md#explicit-edge-policy); the core still
+cannot depend on runtime/provider implementations. Each module must declare
+its actual license independently of visibility and maturity.

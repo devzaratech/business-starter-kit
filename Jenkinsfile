@@ -61,6 +61,7 @@ pipeline {
 
         stage('Architecture guardrails') {
             steps {
+                sh 'npm ci --ignore-scripts'
                 sh 'npm run architecture:test'
                 sh 'npm run architecture:check'
             }
