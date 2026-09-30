@@ -232,6 +232,7 @@ auth.unauthenticated
 authorization.forbidden
 resource.not_found
 concurrency.precondition_failed
+internal.error
 ```
 
 `GET /me/tenants` returns `{ "tenants": [...] }`; each entry has `id`, `name`, and lexicographically sorted `permissions`.
@@ -253,6 +254,8 @@ generated output under target/generated-sources/openapi
 ```
 
 Add `workspace-item-contract` as the only new required governed dependency of `api-spring` at this stage.
+
+Add root script `"contracts:test": "node --test scripts/contracts/test/*.test.mjs"`.
 
 In `apps/web/package.json`, add a pinned `openapi-typescript` dev dependency and `generate:api` script that writes `src/api/generated/schema.ts`. Add `workspace-item-contract` as a required governed dependency of `web-react`. Ignore the generated TypeScript file/directory in git.
 
@@ -409,6 +412,9 @@ git commit -m "feat: add PostgreSQL schema for WorkspaceItem vertical"
 - Modify: `apps/api-spring/src/main/resources/application.yml`
 - Modify: `config/env/.env.local.example`
 - Modify: `config/env/.env.dev.example`
+- Modify: `config/env/.env.qa.example`
+- Modify: `config/env/.env.uat.example`
+- Modify: `config/env/.env.staging.example`
 - Modify: `config/env/.env.prod.example`
 - Modify: `infra/compose/docker-compose.vps.yml`
 
@@ -445,7 +451,7 @@ GET("/me/tenants").header("X-Correlation-Id", "bad\nvalue")
   -> server generates a safe replacement id
 ```
 
-Also assert error JSON contains none of `stackTrace`, `SQLException`, `Authorization`, or the bearer token.
+Also add a test-only endpoint/service failure and assert an unexpected exception returns `500`, `code == "internal.error"`, the same correlation id contract, and a public body containing none of `stackTrace`, `SQLException`, `Authorization`, or the bearer token.
 
 - [ ] **Step 3: Run the focused tests and confirm failure**
 
@@ -466,13 +472,13 @@ Add Spring Security OAuth2 resource-server support.
 
 Fail startup if `local-hmac` is selected for `prod`. Never provide a production default secret.
 
-The local/dev env templates may opt into `local-hmac` with an explicit placeholder secret; prod SHALL default to `oidc`. Pass these values through the Spring Compose service.
+The local/dev env templates may opt into `local-hmac` with an explicit placeholder secret. QA/UAT/staging/prod templates SHALL use `oidc` placeholders so higher environments exercise the external-issuer path. Prod SHALL refuse `local-hmac` at startup. Pass these values through the Spring Compose service.
 
 - [ ] **Step 5: Implement correlation and error mapping**
 
 `CorrelationIdFilter` accepts only `[A-Za-z0-9._-]{1,128}`; otherwise generate a UUID. Put it in MDC for the request and always echo it as `X-Correlation-Id`.
 
-Map security and application exceptions into the generated `ErrorEnvelope` model using the exact codes from Task 1. Configure Spring Security's authentication entry point to use the same envelope for `401`.
+Map security and application exceptions into the generated `ErrorEnvelope` model using the exact codes from Task 1. Configure Spring Security's authentication entry point to use the same envelope for `401`. Map uncaught server exceptions to `500 internal.error`; log the server-side exception with correlation/trace context, but never serialize exception class names, stack traces, SQL, credentials, or tokens into the response.
 
 - [ ] **Step 6: Run focused and full Spring tests**
 
@@ -1073,8 +1079,8 @@ set up Java 17 and Node 20
 npm ci
 start Spring in local-hmac mode against the CI database
 wait for /actuator/health
-apply data/relational/postgres/seed/workspace-item-conformance.sql
-run npm run conformance:workspace-item
+apply `data/relational/postgres/seed/workspace-item-conformance.sql` with `psql -v ON_ERROR_STOP=1 "$DATABASE_URL" -f ...`
+run `npm run conformance:workspace-item`
 print Spring logs on failure
 ```
 
