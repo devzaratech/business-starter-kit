@@ -1,4 +1,6 @@
 import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const REPOSITORY_ROOT = fileURLToPath(new URL('../../', import.meta.url));
@@ -15,6 +17,38 @@ export const COMPOSE_CONFIGURATIONS = [
   { name: 'postgrest', envFile: '.env.example', composeFile: 'infra/compose/docker-compose.postgrest.yml' }
 ];
 
+const COMPOSE_CONTROL_VARIABLES = [
+  'COMPOSE_ENV_FILES',
+  'COMPOSE_FILE',
+  'COMPOSE_PATH_SEPARATOR',
+  'COMPOSE_PROFILES',
+  'COMPOSE_PROJECT_NAME'
+];
+
+function collectComposeOverrideNames() {
+  const names = new Set(COMPOSE_CONTROL_VARIABLES);
+  const files = new Set(COMPOSE_CONFIGURATIONS.flatMap(({ envFile, composeFile }) =>
+    [envFile, composeFile]));
+
+  for (const file of files) {
+    const contents = readFileSync(resolve(REPOSITORY_ROOT, file), 'utf8');
+    for (const match of contents.matchAll(/^\s*([A-Za-z_][A-Za-z0-9_]*)=/gm)) {
+      names.add(match[1].toUpperCase());
+    }
+    for (const match of contents.matchAll(/\$\{([A-Za-z_][A-Za-z0-9_]*)/g)) {
+      names.add(match[1].toUpperCase());
+    }
+  }
+  return names;
+}
+
+const COMPOSE_OVERRIDE_NAMES = collectComposeOverrideNames();
+
+function controlledProcessEnvironment() {
+  return Object.fromEntries(Object.entries(process.env).filter(([name]) =>
+    !COMPOSE_OVERRIDE_NAMES.has(name.toUpperCase())));
+}
+
 function interpolate(value, environment) {
   return value.replace(
     /\$\{([A-Za-z_][A-Za-z0-9_]*)(?::-(.*?))?\}/g,
@@ -30,7 +64,7 @@ function bindingFromPort(port, environment) {
     if (port.published === undefined) return null;
     const hostIp = interpolate(String(port.host_ip ?? '0.0.0.0'), environment);
     const published = interpolate(String(port.published), environment);
-    return `${hostIp}:${published}/${port.protocol ?? 'tcp'}`;
+    return { hostIp, published, protocol: port.protocol ?? 'tcp' };
   }
 
   const parts = interpolate(port, environment).split(':');
@@ -38,23 +72,33 @@ function bindingFromPort(port, environment) {
   const target = parts.pop();
   const published = parts.pop();
   const hostIp = parts.join(':') || '0.0.0.0';
-  return `${hostIp}:${published}/tcp`;
+  return { hostIp, published, protocol: 'tcp' };
 }
 
 export function findDuplicatePublishedBindings(model, environment) {
-  const seen = new Map();
+  const seen = [];
   const duplicates = [];
+  const wildcardAddresses = new Set(['0.0.0.0', '::', '[::]']);
 
   for (const [serviceName, service] of Object.entries(model.services ?? {})) {
     for (const port of service.ports ?? []) {
       const binding = bindingFromPort(port, environment);
       if (!binding) continue;
-      const previousService = seen.get(binding);
-      if (previousService) {
-        duplicates.push({ binding, services: [previousService, serviceName] });
-      } else {
-        seen.set(binding, serviceName);
+
+      const previous = seen.find((candidate) =>
+        candidate.published === binding.published &&
+        candidate.protocol === binding.protocol &&
+        (candidate.hostIp === binding.hostIp ||
+          wildcardAddresses.has(candidate.hostIp) || wildcardAddresses.has(binding.hostIp)));
+
+      if (previous) {
+        const hostIp = previous.hostIp === binding.hostIp ? binding.hostIp : '*';
+        duplicates.push({
+          binding: `${hostIp}:${binding.published}/${binding.protocol}`,
+          services: [previous.serviceName, serviceName]
+        });
       }
+      seen.push({ ...binding, serviceName });
     }
   }
 
@@ -68,6 +112,7 @@ function runCompose(configuration, configArguments) {
   ], {
     cwd: REPOSITORY_ROOT,
     encoding: 'utf8',
+    env: controlledProcessEnvironment(),
     shell: false
   });
 

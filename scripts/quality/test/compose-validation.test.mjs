@@ -29,6 +29,20 @@ test('detects published-port duplicates created by environment interpolation', (
   }]);
 });
 
+test('detects wildcard and specific-address bindings that overlap', () => {
+  const model = {
+    services: {
+      postgres: { ports: ['0.0.0.0:5432:5432'] },
+      n8n: { ports: ['127.0.0.1:5432:5678'] }
+    }
+  };
+
+  assert.deepEqual(findDuplicatePublishedBindings(model, {}), [{
+    binding: '*:5432/tcp',
+    services: ['postgres', 'n8n']
+  }]);
+});
+
 test('actual example environments render with unique bindings and stable n8n ports', () => {
   const results = validateComposeConfigurations();
   assert.deepEqual(
@@ -42,4 +56,20 @@ test('actual example environments render with unique bindings and stable n8n por
   }
 
   assert.equal(COMPOSE_CONFIGURATIONS.length, 10);
+});
+
+test('example validation ignores parent Compose interpolation overrides', { concurrency: false }, (t) => {
+  const variableNames = ['N8N_HOST_PORT', 'POSTGRES_HOST_PORT'];
+  const previous = Object.fromEntries(variableNames.map((name) => [name, process.env[name]]));
+  t.after(() => {
+    for (const name of variableNames) {
+      if (previous[name] === undefined) delete process.env[name];
+      else process.env[name] = previous[name];
+    }
+  });
+
+  process.env.N8N_HOST_PORT = '5432';
+  process.env.POSTGRES_HOST_PORT = '5432';
+
+  assert.doesNotThrow(() => validateComposeConfigurations());
 });
