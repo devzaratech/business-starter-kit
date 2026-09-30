@@ -227,6 +227,8 @@ Each entry SHALL include:
 
 This endpoint exists only for self-discovery. It is not a tenant-administration API.
 
+An authenticated actor with no memberships SHALL receive `200 OK` with an empty collection rather than `404`.
+
 ## 10. Cross-tenant information policy
 
 For an authenticated actor:
@@ -273,6 +275,14 @@ For this first neutral sample, `status` SHALL be an application-neutral enum wit
 - `INACTIVE`
 
 The enum exists only to prove validation and mutable state. It SHALL NOT be interpreted as deletion, retention, or workflow state.
+
+For the first contract:
+
+- `name` is required and SHALL reject blank values;
+- `description` is optional/nullable;
+- `status` is required and SHALL be one of the two values above.
+
+Length limits and any normalization rules SHALL be defined once in the canonical schema and reused by runtime validation rather than re-invented independently in Spring and React.
 
 ### 12.1 Server-controlled fields
 
@@ -334,6 +344,8 @@ createdAt ASC, id ASC
 
 The cursor SHALL encode enough state to continue that ordering, but its encoding is private implementation detail. Clients SHALL treat it as opaque and SHALL only return it unchanged.
 
+`limit` defaults to `20` and SHALL be capped at `100`. Invalid limits or malformed cursors SHALL return `400 Bad Request`.
+
 The response shape is conceptually:
 
 ```json
@@ -371,7 +383,7 @@ A successful update SHALL atomically:
 6. update `updatedAt`;
 7. append `item.updated` audit data;
 8. commit once;
-9. return the updated representation and new `ETag`.
+9. return `200 OK` with the updated representation and new `ETag`.
 
 A valid but stale `If-Match` SHALL return `412 Precondition Failed` with no mutation and no audit append.
 
@@ -466,6 +478,18 @@ A failed authorization decision SHALL not open a business mutation transaction.
 A stale concurrency check SHALL not append an audit event.
 
 Read/list operations do not create business audit records in this checkpoint.
+
+### 21.1 Reconciliation with the existing audit strategy
+
+The existing `docs/security/audit-logging-strategy.md` says audit writes must not block the primary request path and recommends asynchronous durable publishing for high-volume actions. The approved vertical requires a stronger invariant for its low-volume mutation audit: the canonical durable audit append is part of mutation correctness and therefore commits atomically with `POST`/`PUT`.
+
+This specification refines that blanket rule as follows:
+
+- the canonical integrity record for correctness-critical mutations MAY be synchronous and transactional;
+- downstream publication, export, indexing, analytics, or high-volume fan-out SHOULD be asynchronous and durable;
+- a later outbox checkpoint MAY move downstream delivery off the request path without weakening the atomic integrity record.
+
+The implementation plan SHALL update the existing audit strategy document so the repository contains one consistent policy rather than two contradictory rules.
 
 ## 22. Audit record
 
