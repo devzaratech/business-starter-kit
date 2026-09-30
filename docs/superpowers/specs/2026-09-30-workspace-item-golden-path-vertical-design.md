@@ -78,6 +78,21 @@ This checkpoint SHALL NOT include:
 
 These capabilities may be added in later checkpoints without changing the core semantics established here.
 
+### 3.1 Immediate follow-up checkpoint: deletion semantics
+
+Deletion is intentionally deferred from this first vertical, but it is the preferred next small checkpoint after this specification is implemented.
+
+That follow-up checkpoint SHALL explicitly decide and test:
+
+- hard delete versus soft delete/tombstone semantics;
+- `item:delete` authorization;
+- whether `DELETE /tenants/{tenantId}/items/{itemId}` requires `If-Match`;
+- response and idempotency semantics for repeated deletes;
+- `item.deleted` audit behavior;
+- interaction with retention, restoration, and future compliance policies.
+
+This specification deliberately does not choose those semantics in advance. The follow-up checkpoint exists so deletion can be designed as a first-class lifecycle concern rather than added as a nominal fifth CRUD operation.
+
 ---
 
 # Part I — Architecture and boundaries
