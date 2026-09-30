@@ -75,7 +75,10 @@ packages/workspace-item/
 apps/api-spring/src/main/java/com/businessstarterkit/api/
   platform/http/
     CorrelationIdFilter.java
-    ApiExceptions.java
+    InvalidRequestException.java
+    ForbiddenException.java
+    ResourceNotFoundException.java
+    PreconditionFailedException.java
     ApiExceptionHandler.java
   security/
     BskSecurityProperties.java
@@ -87,6 +90,7 @@ apps/api-spring/src/main/java/com/businessstarterkit/api/
     IdentityStore.java
     MembershipStore.java
     TenantSummary.java
+    TenantAccessView.java
     JdbcIdentityStore.java
     JdbcMembershipStore.java
     TenantAccessService.java
@@ -102,6 +106,9 @@ apps/api-spring/src/main/java/com/businessstarterkit/api/
   workspaceitem/
     WorkspaceItem.java
     WorkspaceItemStatus.java
+    CreateWorkspaceItemCommand.java
+    ReplaceWorkspaceItemCommand.java
+    ReplaceOutcome.java
     WorkspaceItemRepository.java
     PostgresWorkspaceItemRepository.java
     WorkspaceItemPage.java
@@ -363,7 +370,7 @@ Create `idx_workspace_items_tenant_created_id` on `(tenant_id, created_at, id)`.
 
 Configure Maven resources so `data/relational/postgres/migrations` is copied to `classpath:db/migration` at build time. Configure Flyway to use `classpath:db/migration`; remove JPA/Hibernate DDL configuration.
 
-Change the Spring Docker image build to use the repository root as build context and copy only `apps/api-spring` plus `data/relational/postgres/migrations` into the build stage. Update the `api-spring` Compose build stanza to:
+Change the Spring Docker image build to use the repository root as build context and copy only `apps/api-spring`, `contracts/workspace-item`, and `data/relational/postgres/migrations` into the build stage. The contract copy is required because Maven generates the Spring interfaces during the container build. Update the `api-spring` Compose build stanza to:
 
 ```yaml
 build:
@@ -404,7 +411,10 @@ git commit -m "feat: add PostgreSQL schema for WorkspaceItem vertical"
 - Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/security/JwtIdentity.java`
 - Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/security/JwtIdentityResolver.java`
 - Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/platform/http/CorrelationIdFilter.java`
-- Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/platform/http/ApiExceptions.java`
+- Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/platform/http/InvalidRequestException.java`
+- Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/platform/http/ForbiddenException.java`
+- Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/platform/http/ResourceNotFoundException.java`
+- Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/platform/http/PreconditionFailedException.java`
 - Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/platform/http/ApiExceptionHandler.java`
 - Create: `apps/api-spring/src/test/java/com/businessstarterkit/api/security/JwtDecoderConfigTest.java`
 - Create: `apps/api-spring/src/test/java/com/businessstarterkit/api/platform/http/SecurityHttpContractTest.java`
@@ -470,7 +480,7 @@ Add Spring Security OAuth2 resource-server support.
 
 `oidc` mode creates a decoder from the configured issuer and adds the audience validator. `local-hmac` mode uses the configured HS256 secret but applies the same issuer/audience/expiration/subject validation.
 
-Fail startup if `local-hmac` is selected for `prod`. Never provide a production default secret.
+Fail startup if `local-hmac` is selected for `prod`. Never provide a production default secret. Permit `GET /actuator/health` without authentication so container/CI health checks remain usable; require authentication for the Golden Path API routes.
 
 The local/dev env templates may opt into `local-hmac` with an explicit placeholder secret. QA/UAT/staging/prod templates SHALL use `oidc` placeholders so higher environments exercise the external-issuer path. Prod SHALL refuse `local-hmac` at startup. Pass these values through the Spring Compose service.
 
@@ -506,6 +516,7 @@ git commit -m "feat: add JWT security and HTTP error baseline"
 - Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/tenancy/IdentityStore.java`
 - Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/tenancy/MembershipStore.java`
 - Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/tenancy/TenantSummary.java`
+- Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/tenancy/TenantAccessView.java`
 - Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/tenancy/JdbcIdentityStore.java`
 - Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/tenancy/JdbcMembershipStore.java`
 - Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/tenancy/TenantAccessService.java`
@@ -523,7 +534,7 @@ git commit -m "feat: add JWT security and HTTP error baseline"
 - `MembershipStore.listTenants(UUID userId) -> List<TenantSummary>`
 - `PermissionStore.findEffectivePermissions(UUID userId, UUID tenantId) -> Set<String>`
 - `AuthorizationGate.require(JwtIdentity identity, UUID tenantId, String permission) -> AuthorizedTenantActor`
-- `TenantAccessService.listFor(JwtIdentity identity) -> List<TenantAccess>`
+- `TenantAccessService.listFor(JwtIdentity identity) -> List<TenantAccessView>`
 
 - [ ] **Step 1: Write failing integration tests against real PostgreSQL**
 
@@ -679,6 +690,10 @@ git commit -m "feat: add transactional audit primitive"
 - Create: `packages/workspace-item/bsk.module.json`
 - Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/workspaceitem/WorkspaceItem.java`
 - Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/workspaceitem/WorkspaceItemStatus.java`
+- Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/workspaceitem/CreateWorkspaceItemCommand.java`
+- Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/workspaceitem/ReplaceWorkspaceItemCommand.java`
+- Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/workspaceitem/ReplaceOutcome.java`
+- Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/workspaceitem/EntityTagCodec.java`
 - Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/workspaceitem/WorkspaceItemRepository.java`
 - Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/workspaceitem/PostgresWorkspaceItemRepository.java`
 - Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/workspaceitem/WorkspaceItemPage.java`
@@ -702,9 +717,10 @@ git commit -m "feat: add transactional audit primitive"
 - `WorkspaceItemRepository.list(UUID tenantId, Optional<CursorPosition> after, int fetchSize) -> List<WorkspaceItem>`
 - `CursorCodec.encode(CursorPosition position) -> String`
 - `CursorCodec.decode(String value) -> CursorPosition`
-- `WorkspaceItemUseCases.create(JwtIdentity, UUID tenantId, CreateCommand) -> WorkspaceItem`
+- `WorkspaceItemUseCases.create(JwtIdentity, UUID tenantId, CreateWorkspaceItemCommand) -> WorkspaceItem`
 - `WorkspaceItemUseCases.get(JwtIdentity, UUID tenantId, UUID itemId) -> WorkspaceItem`
 - `WorkspaceItemUseCases.list(JwtIdentity, UUID tenantId, int limit, Optional<String> cursor) -> WorkspaceItemPage`
+- `EntityTagCodec.encode(long version) -> String`
 
 - [ ] **Step 1: Write failing repository/service tests for tenant isolation and pagination**
 
@@ -774,7 +790,7 @@ Construct `nextCursor` from the last returned row when an extra row proves anoth
 
 `WorkspaceItemUseCases` authorizes `item:create` before calling the transactional command service.
 
-`WorkspaceItemCommandService.create(AuthorizedTenantActor actor, CreateCommand command)` is `@Transactional` and:
+`WorkspaceItemCommandService.create(AuthorizedTenantActor actor, CreateWorkspaceItemCommand command)` is `@Transactional` and:
 
 ```text
 creates UUID + version 1 + timestamps
@@ -831,7 +847,7 @@ git commit -m "feat: add tenant-scoped WorkspaceItem create read and list"
 ### Task 7: PUT optimistic concurrency with strong ETags
 
 **Files:**
-- Create: `apps/api-spring/src/main/java/com/businessstarterkit/api/workspaceitem/EntityTagCodec.java`
+- Modify: `apps/api-spring/src/main/java/com/businessstarterkit/api/workspaceitem/EntityTagCodec.java`
 - Create: `apps/api-spring/src/test/java/com/businessstarterkit/api/workspaceitem/WorkspaceItemUpdateIntegrationTest.java`
 - Modify: `apps/api-spring/src/main/java/com/businessstarterkit/api/workspaceitem/WorkspaceItemRepository.java`
 - Modify: `apps/api-spring/src/main/java/com/businessstarterkit/api/workspaceitem/PostgresWorkspaceItemRepository.java`
@@ -842,7 +858,7 @@ git commit -m "feat: add tenant-scoped WorkspaceItem create read and list"
 **Interfaces:**
 - `EntityTagCodec.encode(long version) -> String`
 - `EntityTagCodec.parseRequiredIfMatch(String header) -> long`
-- `WorkspaceItemRepository.replace(UUID tenantId, UUID itemId, long expectedVersion, ReplaceCommand command, Instant updatedAt) -> ReplaceOutcome`
+- `WorkspaceItemRepository.replace(UUID tenantId, UUID itemId, long expectedVersion, ReplaceWorkspaceItemCommand command, Instant updatedAt) -> ReplaceOutcome`
 - `ReplaceOutcome` has exactly `UPDATED(item)`, `NOT_FOUND`, or `VERSION_MISMATCH`.
 
 - [ ] **Step 1: Write failing ETag parser tests for Review Focus edge cases**
@@ -1138,6 +1154,8 @@ git commit -m "test: add WorkspaceItem runtime conformance"
 - Modify: `apps/web/package.json`
 - Modify: `apps/web/vite.config.ts`
 - Modify: `apps/web/tsconfig.json`
+- Modify: `apps/web/Dockerfile`
+- Modify: `infra/compose/docker-compose.vps.yml`
 - Modify: `.github/workflows/ci.yml`
 
 **Interfaces:**
@@ -1150,6 +1168,8 @@ git commit -m "test: add WorkspaceItem runtime conformance"
 - API base defaults to `/api`; Vite development proxy strips `/api` and forwards to `VITE_BSK_API_PROXY_TARGET` (default `http://127.0.0.1:8080`).
 
 - [ ] **Step 1: Add Vitest/Testing Library/openapi-fetch/Playwright dependencies and write failing API-client tests**
+
+Preserve the existing Node environment test and set the web scripts to equivalent explicit lanes: `test:env` for `node --test test/*.test.js`, `test:ui` for generated-contract + Vitest tests, `test` for both, and `e2e` for Playwright.
 
 Use the generated OpenAPI types through `openapi-fetch`, wrapped by `BskApi`.
 
@@ -1206,7 +1226,19 @@ On `412`, clear the editable stale state only after the user chooses refresh; ne
 
 Proxy `/api/*` to the Spring API and strip the `/api` prefix, matching the existing Caddy `handle_path /api/*` deployment convention. This keeps browser requests same-origin in local development and avoids adding a new CORS policy to the vertical.
 
-- [ ] **Step 8: Run component tests and build**
+- [ ] **Step 8: Make the web container build reproducible from the canonical contract**
+
+Because generated TypeScript is not committed, change the web Docker build to use repository-root context, copy `apps/web` plus `contracts/workspace-item`, and run the same `generate:api`/build scripts used outside Docker. Update only the `web` Compose build stanza to:
+
+```yaml
+build:
+  context: ../..
+  dockerfile: apps/web/Dockerfile
+```
+
+Use the root lockfile/workspace install path or an equivalent locked install; do not regress to an unpinned `npm install` inside the image.
+
+- [ ] **Step 9: Run component tests and build**
 
 Run:
 
@@ -1217,7 +1249,7 @@ npm --workspace @business-starter-kit/web run build
 
 Expected: PASS.
 
-- [ ] **Step 9: Add one full-browser happy-path + stale-update Playwright scenario**
+- [ ] **Step 10: Add one full-browser happy-path + stale-update Playwright scenario**
 
 Using the same running Spring/PostgreSQL fixture as Task 9:
 
@@ -1236,18 +1268,20 @@ save with fresh ETag successfully
 
 This is the small E2E required by the spec; do not duplicate every conformance case in the browser.
 
-- [ ] **Step 10: Extend the Golden Path CI job to run the web E2E**
+- [ ] **Step 11: Extend the Golden Path CI job to run the web E2E**
 
 After API conformance succeeds, start Vite, install only Chromium for Playwright, run the one E2E spec, and upload/print useful failure output. Keep normal `node-workspace-tests` responsible for unit/component tests and build.
 
-- [ ] **Step 11: Run web unit/build and browser E2E locally**
+- [ ] **Step 12: Run web unit/build, Docker build, and browser E2E locally**
+
+Also run `docker build -f apps/web/Dockerfile .` from repository root.
 
 Expected: all PASS.
 
-- [ ] **Step 12: Commit**
+- [ ] **Step 13: Commit**
 
 ```bash
-git add apps/web .github/workflows/ci.yml package-lock.json
+git add apps/web infra/compose/docker-compose.vps.yml .github/workflows/ci.yml package-lock.json
 git commit -m "feat: add React WorkspaceItem reference flow"
 ```
 
