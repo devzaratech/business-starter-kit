@@ -1,6 +1,6 @@
 # Business Starter Kit
 
-Business Starter Kit is a private, sanitized, modular and scalable SaaS foundation for building business applications.
+Business Starter Kit is a sanitized, modular and scalable SaaS foundation for building business applications.
 
 It is designed to start lean on a low-cost VPS with Docker Compose, while keeping a clean evolution path toward enterprise-grade deployments with multi-tenancy, RBAC, audit logs, pluggable storage, database adapters, automation workflows, CMS/ERP integrations and cloud profiles for AWS, Azure and GCP.
 
@@ -14,6 +14,8 @@ It is designed to start lean on a low-cost VPS with Docker Compose, while keepin
 - Support optional providers such as Supabase, PostgREST, MongoDB and S3-compatible storage.
 - Design for multi-tenancy, auditability and enterprise integration from day one.
 - Keep the repository sanitized: no customer names, no production secrets, no proprietary business data.
+- Keep the public core independent from private or vendor-constrained extensions.
+- Treat architectural rules as executable contracts, not diagram-only conventions.
 
 ## Repository Layout
 
@@ -29,6 +31,8 @@ business-starter-kit/
 ├── examples/              # Sanitized example products built on top of the platform
 └── scripts/               # Developer and operational scripts
 ```
+
+The Foundation Guardrails checkpoint keeps this physical layout intact. Golden Path module roles and dependency direction are introduced through `bsk.module.json` metadata first; physical repository restructuring is a separate migration.
 
 ## Initial Target
 
@@ -54,7 +58,6 @@ cp .env.example .env
 docker compose -f infra/compose/docker-compose.vps.yml up -d
 ```
 
-
 ## Supabase Studio Workflow
 
 Supabase Studio is managed through environment profiles. Do not edit `supabase/config.toml` manually when switching environments.
@@ -75,16 +78,22 @@ See [Supabase Studio](docs/database/supabase-studio.md).
 
 ## Quality and Delivery
 
-Business Starter Kit includes CI/CD and unit testing scaffolding from day one.
+Business Starter Kit includes CI/CD, unit testing and executable architecture guardrails.
 
 ```bash
 make test
 make test-spring
 make test-node
+npm run architecture:test
+npm run architecture:check
+# or
+make architecture-check
 make validate-compose
 ```
 
-The default CI pipeline validates Spring Boot tests, NodeJS/web/worker tests and Docker Compose configuration. Deployment workflows are environment-aware and prepared for Dev, QA, UAT, Staging and Prod.
+The default CI pipeline validates architecture guardrails, Spring Boot tests, NodeJS/web/worker tests and Docker Compose configuration. Deployment workflows are environment-aware and prepared for Dev, QA, UAT, Staging and Prod.
+
+Governed modules declare identity, support level, Freedom Class, license, dependencies and capabilities in `bsk.module.json`. Current runtimes are intentionally classified as `Preview` until later conformance work justifies promotion.
 
 ## Git Initialization
 
@@ -118,6 +127,7 @@ docker compose -f infra/compose/docker-compose.vps.yml --profile apps up -d
 ### Architecture
 - [Architecture Overview](docs/architecture/architecture-overview.md)
 - [Module Boundaries](docs/architecture/module-boundaries.md)
+- [BSK Module Metadata](docs/architecture/module-metadata.md)
 - [Repository Map](docs/architecture/repository-map.md)
 - [Enterprise Growth Path](docs/architecture/enterprise-growth-path.md)
 
@@ -154,3 +164,7 @@ docker compose -f infra/compose/docker-compose.vps.yml --profile apps up -d
 - [Integration Patterns](docs/integrations/integration-patterns.md)
 - [n8n Workflow Strategy](docs/integrations/n8n-workflow-strategy.md)
 - [CMS / ERP Integration Strategy](docs/integrations/cms-erp-integration-strategy.md)
+
+## License
+
+The BSK core is licensed under the Apache License 2.0. Future private extensions may use separate proprietary terms, but the public core must not depend on those private implementations.

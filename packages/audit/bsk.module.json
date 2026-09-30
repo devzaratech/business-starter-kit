@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0",
+  "module": {
+    "name": "audit",
+    "version": "0.1.0",
+    "kind": "capability",
+    "visibility": "public",
+    "freedomClass": "F1",
+    "supportLevel": "Preview",
+    "license": "Apache-2.0"
+  },
+  "compatibility": { "bskPlatform": "1.x" },
+  "dependencies": {
+    "required": [],
+    "optional": [],
+    "forbiddenKinds": ["runtime", "adapter", "deployment", "application", "reference-client", "private-extension"]
+  },
+  "capabilities": {
+    "provides": [],
+    "requires": []
+  }
+}

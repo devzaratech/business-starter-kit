@@ -1,0 +1,6 @@
+{
+  "schemaVersion": "1.0",
+  "platform": "business-starter-kit",
+  "platformLine": "1.x",
+  "manifestSchema": "contracts/schemas/bsk-module.schema.json"
+}

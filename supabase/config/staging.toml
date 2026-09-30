@@ -6,25 +6,26 @@ project_id = "business-starter-kit-staging"
 
 [api]
 enabled = true
-port = 55421
+port = 45121
 schemas = ["public", "api", "storage", "graphql_public"]
 extra_search_path = ["public", "extensions"]
 max_rows = 1000
 
 [db]
-port = 55422
-major_version = 16
+port = 45122
+major_version = 15
 
+shadow_port = 45120
 [studio]
-enabled = false
-port = 55423
-api_url = "http://127.0.0.1:55421"
+enabled = true
+port = 45123
+api_url = "http://127.0.0.1:45121"
 
 [inbucket]
 enabled = true
-port = 55424
-smtp_port = 55425
-pop3_port = 55426
+port = 45124
+smtp_port = 45125
+pop3_port = 45126
 
 [storage]
 enabled = true
@@ -39,3 +40,9 @@ enable_signup = true
 
 [edge_runtime]
 enabled = true
+
+inspector_port = 45128
+[analytics]
+enabled = true
+port = 45127
+backend = "postgres"

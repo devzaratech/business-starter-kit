@@ -59,6 +59,14 @@ pipeline {
             }
         }
 
+        stage('Architecture guardrails') {
+            steps {
+                sh 'npm ci --ignore-scripts'
+                sh 'npm run architecture:test'
+                sh 'npm run architecture:check'
+            }
+        }
+
         stage('Spring Boot API tests') {
             steps {
                 dir('apps/api-spring') {
@@ -76,12 +84,7 @@ pipeline {
 
         stage('Docker Compose validation') {
             steps {
-                sh '''
-                    for file in infra/compose/docker-compose.*.yml; do
-                        echo "Validating $file"
-                        docker compose -f "$file" config >/dev/null
-                    done
-                '''
+                sh 'npm run infrastructure:test'
             }
         }
 

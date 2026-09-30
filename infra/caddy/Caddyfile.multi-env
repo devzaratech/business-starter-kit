@@ -1,0 +1,254 @@
+bsk-dev.devzaratech.xyz {
+	encode gzip
+
+	header {
+		X-Frame-Options "DENY"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+	}
+
+	handle_path /api/python/* {
+		reverse_proxy bsk-dev-api-fastapi:8000 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up Host {host}
+		}
+	}
+
+	handle_path /api/node/* {
+		reverse_proxy bsk-dev-api-node:3001 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up Host {host}
+		}
+	}
+
+	handle_path /api/php/* {
+		reverse_proxy bsk-dev-api-php:8000 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up Host {host}
+		}
+	}
+
+	handle_path /api/* {
+		reverse_proxy bsk-dev-api-spring:8080 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up Host {host}
+		}
+	}
+
+	handle {
+		reverse_proxy bsk-dev-web:80 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up Host {host}
+		}
+	}
+}
+
+bsk-qa.devzaratech.xyz {
+	encode gzip
+
+	header {
+		X-Frame-Options "DENY"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+	}
+
+	handle_path /api/python/* {
+		reverse_proxy bsk-qa-api-fastapi:8000 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up Host {host}
+		}
+	}
+
+	handle_path /api/node/* {
+		reverse_proxy bsk-qa-api-node:3001 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up Host {host}
+		}
+	}
+
+	handle_path /api/php/* {
+		reverse_proxy bsk-qa-api-php:8000 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up Host {host}
+		}
+	}
+
+	handle_path /api/* {
+		reverse_proxy bsk-qa-api-spring:8080 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up Host {host}
+		}
+	}
+
+	handle {
+		reverse_proxy bsk-qa-web:80 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up Host {host}
+		}
+	}
+}
+
+bsk-uat.devzaratech.xyz {
+	encode gzip
+
+	header {
+		X-Frame-Options "DENY"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+	}
+
+	handle_path /api/python/* {
+		reverse_proxy bsk-uat-api-fastapi:8000 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up Host {host}
+		}
+	}
+
+	handle_path /api/node/* {
+		reverse_proxy bsk-uat-api-node:3001 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up Host {host}
+		}
+	}
+
+	handle_path /api/php/* {
+		reverse_proxy bsk-uat-api-php:8000 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up Host {host}
+		}
+	}
+
+	handle_path /api/* {
+		reverse_proxy bsk-uat-api-spring:8080 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up Host {host}
+		}
+	}
+
+	handle {
+		reverse_proxy bsk-uat-web:80 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up Host {host}
+		}
+	}
+}
+
+bsk-staging.devzaratech.xyz {
+	encode gzip
+
+	header {
+		X-Frame-Options "DENY"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+	}
+
+	handle_path /api/python/* {
+		reverse_proxy bsk-staging-api-fastapi:8000 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up Host {host}
+		}
+	}
+
+	handle_path /api/node/* {
+		reverse_proxy bsk-staging-api-node:3001 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up Host {host}
+		}
+	}
+
+	handle_path /api/php/* {
+		reverse_proxy bsk-staging-api-php:8000 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up Host {host}
+		}
+	}
+
+	handle_path /api/* {
+		reverse_proxy bsk-staging-api-spring:8080 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up Host {host}
+		}
+	}
+
+	handle {
+		reverse_proxy bsk-staging-web:80 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up Host {host}
+		}
+	}
+}
+
+bsk-prod.devzaratech.xyz {
+	encode gzip
+
+	header {
+		X-Frame-Options "DENY"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+	}
+
+	handle_path /api/python/* {
+		reverse_proxy bsk-prod-api-fastapi:8000 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up Host {host}
+		}
+	}
+
+	handle_path /api/node/* {
+		reverse_proxy bsk-prod-api-node:3001 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up Host {host}
+		}
+	}
+
+	handle_path /api/php/* {
+		reverse_proxy bsk-prod-api-php:8000 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up Host {host}
+		}
+	}
+
+	handle_path /api/* {
+		reverse_proxy bsk-prod-api-spring:8080 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up Host {host}
+		}
+	}
+
+	handle {
+		reverse_proxy bsk-prod-web:80 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up Host {host}
+		}
+	}
+}

@@ -24,7 +24,7 @@ services:
   # ----------------------------------------------------------------------------
   postgres:
     image: postgres:16-alpine
-    container_name: bsk-postgres
+    container_name: bsk-${APP_ENV:-dev}-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-business_starter}
@@ -45,7 +45,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: bsk-redis
+    container_name: bsk-${APP_ENV:-dev}-redis
     restart: unless-stopped
     ports:
       - "${REDIS_HOST_BIND:-127.0.0.1}:${REDIS_HOST_PORT:-6379}:6379"
@@ -61,9 +61,11 @@ services:
 
   seaweed-master:
     image: chrislusf/seaweedfs:3.94
-    container_name: bsk-seaweed-master
+    container_name: bsk-${APP_ENV:-dev}-seaweed-master
     restart: unless-stopped
     command: "master -ip=seaweed-master -mdir=/data -volumeSizeLimitMB=1024"
+    ports:
+      - "${SEAWEED_MASTER_HOST_BIND:-127.0.0.1}:${SEAWEED_MASTER_HOST_PORT:-19333}:9333"
     volumes:
       - seaweed-master-data:/data
     networks:
@@ -71,7 +73,7 @@ services:
 
   seaweed-volume:
     image: chrislusf/seaweedfs:3.94
-    container_name: bsk-seaweed-volume
+    container_name: bsk-${APP_ENV:-dev}-seaweed-volume
     restart: unless-stopped
     command: "volume -mserver=seaweed-master:9333 -ip=seaweed-volume -dir=/data -max=0"
     depends_on:
@@ -83,9 +85,11 @@ services:
 
   seaweed-filer:
     image: chrislusf/seaweedfs:3.94
-    container_name: bsk-seaweed-filer
+    container_name: bsk-${APP_ENV:-dev}-seaweed-filer
     restart: unless-stopped
     command: "filer -master=seaweed-master:9333 -ip=seaweed-filer"
+    ports:
+      - "${SEAWEED_FILER_HOST_BIND:-127.0.0.1}:${SEAWEED_FILER_HOST_PORT:-18888}:8888"
     depends_on:
       - seaweed-master
       - seaweed-volume
@@ -96,7 +100,7 @@ services:
 
   seaweed-s3:
     image: chrislusf/seaweedfs:3.94
-    container_name: bsk-seaweed-s3
+    container_name: bsk-${APP_ENV:-dev}-seaweed-s3
     restart: unless-stopped
     command: "s3 -filer=seaweed-filer:8888 -ip.bind=0.0.0.0"
     depends_on:
@@ -107,8 +111,8 @@ services:
       - bsk-internal
 
   n8n:
-    image: ${N8N_IMAGE:-n8nio/n8n:1.107.4}
-    container_name: bsk-n8n
+    image: ${N8N_IMAGE:-n8nio/n8n:1.121.0}
+    container_name: bsk-${APP_ENV:-dev}-n8n
     restart: unless-stopped
     environment:
       N8N_HOST: ${N8N_HOST:-localhost}
@@ -124,7 +128,7 @@ services:
       DB_POSTGRESDB_USER: ${POSTGRES_USER:-business_starter}
       DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
     ports:
-      - "${N8N_HOST_BIND:-127.0.0.1}:${N8N_HOST_PORT:-5678}:${N8N_PORT:-5678}"
+      - "${N8N_HOST_BIND:-127.0.0.1}:${N8N_HOST_PORT:-15678}:5678"
     volumes:
       - n8n-data:/home/node/.n8n
     depends_on:
@@ -140,7 +144,7 @@ services:
     build:
       context: ../../apps/api-spring
     image: bsk/api-spring:${IMAGE_TAG:-local}
-    container_name: bsk-api-spring
+    container_name: bsk-${APP_ENV:-dev}-api-spring
     restart: unless-stopped
     profiles: ["apps"]
     environment:
@@ -161,25 +165,60 @@ services:
       retries: 3
       start_period: 40s
     networks:
+      - bsk-edge
       - bsk-internal
 
   api-node:
     build:
       context: ../../apps/api-node
     image: bsk/api-node:${IMAGE_TAG:-local}
-    container_name: bsk-api-node
+    container_name: bsk-${APP_ENV:-dev}-api-node
     restart: unless-stopped
     profiles: ["apps"]
     environment:
       PORT: 3001
     networks:
+      - bsk-edge
+      - bsk-internal
+
+  api-fastapi:
+    build:
+      context: ../../apps/api-fastapi
+    image: bsk/api-fastapi:${IMAGE_TAG:-local}
+    container_name: bsk-${APP_ENV:-dev}-api-fastapi
+    restart: unless-stopped
+    profiles: ["apps"]
+    environment:
+      PORT: 8000
+    networks:
+      - bsk-edge
+      - bsk-internal
+
+
+  api-php:
+    build:
+      context: ../../apps/api-php
+    image: bsk/api-php:${IMAGE_TAG:-local}
+    container_name: bsk-${APP_ENV:-dev}-api-php
+    restart: unless-stopped
+    profiles: ["php"]
+    environment:
+      APP_ENV: ${APP_ENV:-dev}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8000/health >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - bsk-edge
       - bsk-internal
 
   worker:
     build:
       context: ../../apps/worker
     image: bsk/worker:${IMAGE_TAG:-local}
-    container_name: bsk-worker
+    container_name: bsk-${APP_ENV:-dev}-worker
     restart: unless-stopped
     profiles: ["apps"]
     environment:
@@ -191,20 +230,22 @@ services:
     build:
       context: ../../apps/web
     image: bsk/web:${IMAGE_TAG:-local}
-    container_name: bsk-web
+    container_name: bsk-${APP_ENV:-dev}-web
     restart: unless-stopped
     profiles: ["apps"]
     networks:
+      - bsk-edge
       - bsk-internal
 
   reverse-proxy:
+    profiles:
+      - single-env-proxy
     image: caddy:2-alpine
-    container_name: bsk-reverse-proxy
+    container_name: bsk-${APP_ENV:-dev}-reverse-proxy
     restart: unless-stopped
-    profiles: ["apps"]
     ports:
       - "${REVERSE_PROXY_HTTP_BIND:-0.0.0.0}:${REVERSE_PROXY_HTTP_PORT:-80}:80"
-      # - "${REVERSE_PROXY_HTTPS_BIND:-0.0.0.0}:${REVERSE_PROXY_HTTPS_PORT:-443}:443"   # enable once a real domain + TLS are configured
+      - "${REVERSE_PROXY_HTTPS_BIND:-0.0.0.0}:${REVERSE_PROXY_HTTPS_PORT:-443}:443"
     volumes:
       - ../caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data
@@ -214,9 +255,13 @@ services:
       - api-spring
       - api-node
     networks:
+      - bsk-edge
       - bsk-internal
 
 networks:
+  bsk-edge:
+    external: true
+    name: bsk-edge
   bsk-internal:
     driver: bridge
 

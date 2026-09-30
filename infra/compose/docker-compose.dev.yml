@@ -7,3 +7,8 @@ name: business-starter-dev
 
 include:
   - docker-compose.vps.yml
+
+networks:
+  bsk-edge:
+    external: true
+    name: bsk-edge

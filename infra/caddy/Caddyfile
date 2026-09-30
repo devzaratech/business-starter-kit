@@ -1,27 +1,55 @@
-# Working reverse proxy used by the "apps" Compose profile.
-#
-# Listens on plain HTTP :80 so it works on a bare VPS IP out of the box.
-# For production, replace ":80" with your domain (e.g. app.example.com) and
-# Caddy will provision TLS automatically; then enable the 443 port mapping in
-# docker-compose.vps.yml.
-#
-# Routing:
-#   /api/node/*  -> Node integration service
-#   /api/*       -> Spring Boot core API
-#   everything   -> Web application (SPA)
-
-:80 {
+bsk-dev.devzaratech.xyz {
 	encode gzip
 
-	handle_path /api/node/* {
-		reverse_proxy api-node:3001
+	header {
+		X-Frame-Options "DENY"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
 	}
 
-	handle /api/* {
-		reverse_proxy api-spring:8080
+	handle_path /api/python/* {
+		reverse_proxy api-fastapi:8000 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-Proto {scheme}
+			header_up Host {host}
+		}
+	}
+
+	handle_path /api/node/* {
+		reverse_proxy api-node:3001 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-Proto {scheme}
+			header_up Host {host}
+		}
+	}
+
+	handle_path /api/php/* {
+		reverse_proxy api-php:8000 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-Proto {scheme}
+			header_up Host {host}
+		}
+	}
+
+	handle_path /api/* {
+		reverse_proxy api-spring:8080 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-Proto {scheme}
+			header_up Host {host}
+		}
 	}
 
 	handle {
-		reverse_proxy web:80
+		reverse_proxy web:80 {
+			header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
+			header_up X-Forwarded-Proto {scheme}
+			header_up Host {host}
+		}
 	}
 }

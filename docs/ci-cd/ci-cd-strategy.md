@@ -15,7 +15,7 @@ live release -> prod
 
 | Stage | Trigger | Target | Required Gates |
 |---|---|---|---|
-| Pull Request | PR to `develop`, `release/*`, `uat/*` or `main` | None | Unit tests, build, Compose validation |
+| Pull Request | PR to `develop`, `release/*`, `uat/*`, `main` or `chore/multi-env-hardening` | None | Architecture, unit tests, build, Compose validation |
 | Dev Deployment | Merge to `develop` | Dev | CI passed |
 | QA Deployment | Release branch update | QA | CI passed, technical checklist |
 | UAT Deployment | UAT branch update or manual approval | UAT | QA passed, business-ready notes |
@@ -35,3 +35,15 @@ Use your CI/CD provider's environment protection rules for sensitive targets:
 ## Deployment Rule
 
 Never deploy untested code directly to production. Production deployments should promote a known artifact, image tag or commit SHA that already passed CI.
+
+## Architecture gate
+
+`npm run architecture:test` and `npm run architecture:check` are the canonical
+architecture commands. GitHub Actions and Jenkins install their locked schema
+dependency with `npm ci --ignore-scripts` first; policy lives in repository
+code, not YAML or Groovy. Workspace verification subsequently uses normal
+`npm ci` so its existing install scripts still run.
+
+Architecture tests use native Node test discovery from `scripts/architecture`,
+without shell globs. GitHub runs this gate on Ubuntu and Windows with Node 20,
+and both matrix results are required by the aggregate quality gate.
