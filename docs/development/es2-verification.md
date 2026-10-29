@@ -90,6 +90,8 @@ Independent review of `c9ba057..d50ef65` checked full-tuple ownership, atomic
 claims, failure isolation, context pinning, resource/status claims and accidental
 destructive behavior, and independently passed the then-current 58 tests. The
 CPU comparison and lifecycle ordering findings were corrected with regressions.
+Focused independent re-review of `f0ee872` confirmed both fixes and passed all
+22 targeted Docker-reader/lifecycle tests, with no new findings or daemon reads.
 No further blocking issue was found within the documented trust boundary.
 Observation verifies CPU/memory/PID configuration and the explicit ownership/
 network/mount/privilege gates; it does not verify all generated hardening settings
@@ -108,3 +110,15 @@ Rollback removes this opt-in code/test wiring only. Preserve any registry, claim
 and volumes until separately verified. No live resource adoption or deletion is
 part of rollback. Hosted CI results, when available, must identify the tested
 revision and remain distinct from the blocked runtime checks above.
+
+## Hosted GitHub Actions evidence
+
+[PR #9](https://github.com/devzaratech/business-starter-kit/pull/9) is published.
+[CI run 40824308964](https://github.com/devzaratech/business-starter-kit/actions/runs/40824308964)
+tested implementation revision `f0ee8722540eade1daa251429773b56d3cd8218a`.
+Linux and Windows architecture guardrails (including ES1 and ES2 tests), Spring
+Boot API tests, Node/worker/web tests and build, and legacy Docker Compose
+validation all passed. The optional SonarQube job completed its configuration
+check, but its analysis step was skipped because configuration was absent.
+This hosted evidence is separate from local results and establishes no runtime
+Docker isolation, cgroup enforcement or production readiness.
