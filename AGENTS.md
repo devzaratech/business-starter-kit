@@ -3,7 +3,7 @@
 ## Start here
 - The sole active long-term implementation roadmap is [BSK Agent Master Plan](docs/superpowers/plans/2026-10-28-bsk-agent-master-plan.md).
 - Check existing accepted ADRs and code before taking any task; the roadmap describes planned work, not deployed features.
-- First assignment is **PR0 / ES0 (architecture audit, minimal contracts, threat boundaries and tests)** only. After review, complete **Engineering Vertical Slices ES1–ES6** before implementing any business vertical. Never bundle PR1–PR12 into one task.
+- **PR0 / ES0 is merged** (architecture audit/contracts); **PR1 / ES1 is merged** (offline declarations/planning, baseline `c9ba057`). These milestones do not establish runtime conformance. Continue with separately scoped Engineering Vertical Slices ES2–ES6 before any business vertical. Never bundle PR1–PR12 into one task.
 - **Engineering Vertical Slices** are platform conformance tests with synthetic non-business workloads; the Engineering Golden Path Baseline (EGPB) covers ES0–ES6.
 - **Business verticals** have a separate [specification](docs/superpowers/specs/bsk-business-verticals.md): `examples/` are documentation-only, and CRM Lite is the first planned product **after** EGPB. Do not implement or claim business apps before the gate.
 - Follow `docs/architecture/`, `contracts/schemas/`, `bsk.module.json` and the public-core Apache-2.0 dependency constraints.

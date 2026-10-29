@@ -1,0 +1,68 @@
+{
+  "hostRef": "disposable-host",
+  "capacity": {
+    "cpuMillis": 4000,
+    "memoryBytes": 1073741824,
+    "pids": 1024,
+    "storageBytes": 1073741824
+  },
+  "reserved": {
+    "cpuMillis": 250,
+    "memoryBytes": 67108864,
+    "pids": 64,
+    "storageBytes": 0
+  },
+  "capabilities": {
+    "cpu": "supported",
+    "memory": "supported",
+    "pids": "supported",
+    "storage": "unsupported"
+  },
+  "storageMode": "advisory",
+  "projectBudgets": [
+    {
+      "installationRef": "fixture-install",
+      "projectRef": "fixture-a",
+      "limits": {
+        "cpuMillis": 4000,
+        "memoryBytes": 1073741824,
+        "pids": 1024,
+        "storageBytes": 1073741824
+      }
+    },
+    {
+      "installationRef": "fixture-install",
+      "projectRef": "fixture-b",
+      "limits": {
+        "cpuMillis": 4000,
+        "memoryBytes": 1073741824,
+        "pids": 1024,
+        "storageBytes": 1073741824
+      }
+    }
+  ],
+  "environmentBudgets": [
+    {
+      "installationRef": "fixture-install",
+      "projectRef": "fixture-a",
+      "environmentRef": "review-142",
+      "limits": {
+        "cpuMillis": 4000,
+        "memoryBytes": 1073741824,
+        "pids": 1024,
+        "storageBytes": 1073741824
+      }
+    },
+    {
+      "installationRef": "fixture-install",
+      "projectRef": "fixture-b",
+      "environmentRef": "review-142",
+      "limits": {
+        "cpuMillis": 4000,
+        "memoryBytes": 1073741824,
+        "pids": 1024,
+        "storageBytes": 1073741824
+      }
+    }
+  ]
+}

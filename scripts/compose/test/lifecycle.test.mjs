@@ -64,9 +64,18 @@ test('inspection distinguishes requested/admitted/observed from unproven kernel 
   objects[0].limits.memoryBytes = 0; r = inspectLimits(entry, objects);
   assert.equal(r.configurationMatches, false); assert.ok(r.observed.length > 0);
 });
-test('missing inventory, unsupported action, changed revision and reader failure deny', t => {
+test('missing inventory, unsupported action and reader failure deny', t => {
   const { store, entry, reader } = setup(t);
   denies(() => planLifecycle(store, 'unknown', 'down', reader), 'INVENTORY_MISSING');
   denies(() => planLifecycle(store, entry.plan.planId, 'prune', reader), 'ACTION');
   denies(() => planLifecycle(store, entry.plan.planId, 'down', { resources() { throw Object.assign(new Error('unavailable'), { code: 'DOCKER_READ' }); } }), 'DOCKER_READ');
+});
+
+test('a real registry commit during inspection invalidates the lifecycle intent', t => {
+  const root = mkdtempSync(join(tmpdir(), 'bsk-es2-stale-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const store = Inventory.initialize(root, host()); const entry = store.claim(request(), 0).entries[0];
+  const reader = { resources(plan) { store.claim(request('fixture-b'), 1); return runtimeObjects(plan); } };
+  denies(() => planLifecycle(store, entry.plan.planId, 'down', reader), 'STALE_REVISION');
+  assert.equal(store.snapshot().entries.length, 2);
 });

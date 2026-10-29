@@ -64,6 +64,7 @@ pipeline {
                 sh 'npm ci --ignore-scripts'
                 sh 'npm run architecture:test'
                 sh 'npm run declarations:test'
+                sh 'npm run compose:test'
                 sh 'npm run architecture:check'
             }
         }

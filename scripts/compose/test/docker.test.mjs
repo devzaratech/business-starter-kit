@@ -4,6 +4,9 @@ import { DockerReader } from '../lib/docker.mjs';
 import { buildPlan } from '../lib/plan.mjs';
 import { request } from '../test-support/fixtures.mjs';
 import { authorization } from '../test-support/runtime.mjs';
+import { runtimeObjects } from '../test-support/runtime.mjs';
+import { inspectLimits } from '../lib/lifecycle.mjs';
+import { createHash } from 'node:crypto';
 
 test('denies default/Desktop contexts, endpoint aliases and absent authorization before daemon reads', () => {
   for (const change of [a => { a.context = 'default'; }, a => { a.context = 'desktop-linux'; },
@@ -36,4 +39,30 @@ test('all inspection calls are explicitly context scoped and read-only; failures
   assert.throws(() => reader.resources(buildPlan(request())), e => e.code === 'DOCKER_READ' && !e.message.includes('fake-secret'));
   for (const call of calls.slice(1)) assert.deepEqual(call.slice(0, 2), ['--context', authorization().context]);
   assert.ok(calls.every(c => !c.some(arg => ['up', 'down', 'rm', 'prune', 'stop', 'kill'].includes(arg))));
+});
+
+test('normalizes real Docker inspection shapes, deduplicates IDs and captures version fields', () => {
+  const plan = buildPlan(request());
+  const raw = runtimeObjects(plan).map(o => {
+    const id = createHash('sha256').update(`${o.kind}:${o.name}`).digest('hex');
+    if (o.kind === 'container') return { kind: o.kind, Id: id, Name: `/${o.name}`, Config: { Labels: o.labels },
+      HostConfig: { NanoCpus: 250000000, Memory: 33554432, PidsLimit: 32, Privileged: false, NetworkMode: 'bridge' },
+      NetworkSettings: { Networks: Object.fromEntries(o.networks.map(n => [n, {}])), Ports: { '8080/tcp': null } },
+      Mounts: o.mounts.map(name => ({ Type: 'volume', Name: name })) };
+    return { kind: o.kind, Id: id, Name: o.name, Labels: o.labels, Internal: true, Driver: 'bridge', Containers: {} };
+  });
+  const reader = new DockerReader(authorization(), args => {
+    if (args[0] === 'context') return JSON.stringify(authorization().endpoint);
+    if (args[2] === 'info') return JSON.stringify({ ID: authorization().engineId, OSType: 'linux', ServerVersion: 'fixture-engine', KernelVersion: 'fixture-kernel', CgroupVersion: '2' });
+    if (args[2] === 'compose') return 'fixture-compose\n';
+    const values = raw.filter(o => o.kind === args[2]);
+    if (args[3] === 'ls') return values.map(o => o.kind === 'volume' ? o.Name : o.Id).join('\n');
+    const match = values.find(o => o.Id === args[4] || o.Name.replace(/^\//, '') === args[4]);
+    assert.ok(match); return JSON.stringify([match]);
+  });
+  const objects = reader.resources(plan);
+  assert.equal(objects.length, 5);
+  const report = inspectLimits({ plan, admission: { requested: plan.requested, admitted: plan.usage } }, objects);
+  assert.equal(report.configurationMatches, true); assert.equal(report.enforced, 'unknown');
+  assert.deepEqual(reader.versions(plan), { engine: 'fixture-engine', kernel: 'fixture-kernel', cgroup: '2', compose: 'fixture-compose', engineId: authorization().engineId, context: authorization().context });
 });

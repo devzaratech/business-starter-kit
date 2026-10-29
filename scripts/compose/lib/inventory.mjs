@@ -29,12 +29,15 @@ function validateState(s) {
 }
 
 export class Inventory {
-  constructor(root) { this.root = resolve(root); }
+  constructor(root) {
+    if (typeof root !== 'string' || !root || root.startsWith('-') || /^[\\/]{2}|^[a-z][a-z0-9+.-]*:\/\//i.test(root)) fail('INVENTORY_PATH');
+    this.root = resolve(root);
+  }
 
   static initialize(root, host) {
     assertHost(host);
-    try { mkdirSync(root, { recursive: true, mode: 0o700 }); } catch { fail('INVENTORY_WRITE'); }
     const store = new Inventory(root);
+    try { mkdirSync(store.root, { recursive: true, mode: 0o700 }); } catch { fail('INVENTORY_WRITE'); }
     store.lock(() => {
       if (existsSync(join(store.root, 'inventory.json'))) fail('ALREADY_INITIALIZED');
       store.persist({ version: 1, revision: 0, host: structuredClone(host), entries: [] });
