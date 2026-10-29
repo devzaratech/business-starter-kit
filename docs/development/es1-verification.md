@@ -95,3 +95,27 @@ Rollback removes only the new declaration path and npm/CI wiring. There is no
 persisted state, data migration or host rollback. Next engineering task, only
 after review and a separate assignment: ES2/PR2a disposable-host Compose ownership
 and resource admission. No ES2 implementation is included here.
+
+## Hosted GitHub Actions evidence
+
+Published [PR #8](https://github.com/devzaratech/business-starter-kit/pull/8)
+targets `main`. For implementation commit
+`00bb5620cf49151441e63f2b39af1da04aaecfc9`,
+[CI run #34 / 40819622948](https://github.com/devzaratech/business-starter-kit/actions/runs/40819622948)
+completed successfully. GitHub API job/step summaries verified:
+
+| Job | Actual outcome |
+|---|---|
+| Architecture guardrails, Ubuntu / Node 20 | Success, including declaration tests and module validation |
+| Architecture guardrails, Windows / Node 20 | Success, including declaration tests and module validation |
+| Spring Boot API / Java 17 | Success; Maven unit-test step passed |
+| Node, worker and web | Success; workspace tests and artifact build passed |
+| Docker Compose validation | Success; environment/safety test step passed |
+| Required quality gate | Success |
+| Optional SonarQube job | Job success; actual analysis step skipped |
+
+These hosted results are separate from the local table. They establish Java 17
+and Windows/Linux Node 20 job success for that implementation revision, not a
+local Maven success, Jenkins run, security audit pass or runtime conformance.
+The historical local Maven block and 11 npm vulnerability entries remain recorded.
+This evidence-only update follows that run; any later head needs its own CI.
