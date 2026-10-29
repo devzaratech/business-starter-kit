@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { validateBundle } from '../lib/validate.mjs';
-import { fixture, resources } from './helpers.mjs';
+import { fixture, resources } from '../test-support/helpers.mjs';
 
 function denied(bundle, code) {
   const result = validateBundle(bundle);

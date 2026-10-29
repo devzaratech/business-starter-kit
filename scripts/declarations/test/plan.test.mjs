@@ -9,7 +9,7 @@ import https from 'node:https';
 import { syncBuiltinESMExports } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { planBundle } from '../lib/plan.mjs';
-import { fixture, resources, snapshot } from './helpers.mjs';
+import { fixture, resources, snapshot } from '../test-support/helpers.mjs';
 
 function reverseKeys(value) {
   if (Array.isArray(value)) return value.map(reverseKeys);

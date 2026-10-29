@@ -15,6 +15,7 @@
     "test:worker": "npm --workspace @business-starter-kit/worker run test",
     "architecture:test": "cd scripts/architecture && node --test",
     "architecture:check": "node scripts/architecture/check.mjs --root .",
+    "declarations:test": "cd scripts/declarations && node --test",
     "infrastructure:test": "cd scripts/quality && node --test",
     "build": "npm run build --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present"

@@ -44,6 +44,9 @@ jobs:
       - name: Run architecture tests
         run: npm run architecture:test
 
+      - name: Run declaration validation and dry-run tests
+        run: npm run declarations:test
+
       - name: Validate architecture manifests and dependency rules
         run: npm run architecture:check
 
