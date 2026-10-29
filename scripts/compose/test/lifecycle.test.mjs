@@ -34,6 +34,17 @@ test('destroy intent needs explicit data-loss confirmation bound to exact plan',
   const p = planLifecycle(store, entry.plan.planId, 'destroy', reader, { confirmPlanId: entry.plan.planId, confirmDataLoss: true });
   assert.equal(p.preservesVolumes, false); assert.ok(p.actions.some(a => a.kind === 'volume'));
 });
+
+test('lifecycle identity and observations are independent of Docker inspection order', t => {
+  const { store, entry, objects, reader } = setup(t);
+  for (const action of ['stop', 'down', 'destroy']) {
+    const confirmation = { confirmPlanId: entry.plan.planId, confirmDataLoss: true };
+    const forward = planLifecycle(store, entry.plan.planId, action, reader, confirmation);
+    const reverse = planLifecycle(store, entry.plan.planId, action,
+      { resources: () => structuredClone(objects).reverse() }, confirmation);
+    assert.deepEqual(reverse, forward);
+  }
+});
 for (const [name, change] of [
   ['foreign owner', objects => { objects[0].labels['dev.bsk.project'] = 'fixture-b'; }],
   ['unlabeled volume', objects => { objects.find(o => o.kind === 'volume').labels = {}; }],

@@ -95,6 +95,10 @@ Admission reports `requested` and `admitted`; `enforced` stays `unknown` and
 `observed` is initially null. Read-only Docker inspection reports actual configured
 limits and mismatches, but keeps kernel enforcement/conformance unproven. Cgroup
 inspection and controlled load/OOM tests are still required for ES2 acceptance.
+`configurationMatches` compares CPU, memory and PID limits only. Ownership and
+network/mount/privilege checks are separate rejection gates; inspection does not
+verify every rendered hardening setting (including capability drops,
+no-new-privileges, swap limits or mount destinations).
 
 Inventory uses an exclusive `.lock`, schema/derived-plan validation on every read,
 expected revisions, a temporary fsynced file and atomic rename for a whole-state
@@ -144,6 +148,8 @@ and `confirmDataLoss: true`, and verified volume ownership. All plans say
 executor. Ownership must be checked again by any future executor at use time.
 Inventory claims are retained after lifecycle planning; no capacity is released
 because a plan was printed. No global prune or image deletion exists.
+Observations and actions use stable identity ordering before lifecycle hashing;
+Docker inspection order does not change the returned lifecycle ID.
 
 ## Verification, security and rollback
 

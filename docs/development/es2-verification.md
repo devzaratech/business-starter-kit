@@ -13,8 +13,8 @@ scratch space; it is not a new repository dependency or a Docker environment.
 
 | Command/check | Actual result | Limits |
 |---|---|---|
-| `npm run compose:test` | Exit 0; 58 passed, 0 failed/skipped | Includes schema/topology/admission, real-process races, disk failure, guard/observation/lifecycle doubles, CLI and real Compose config parsing |
-| Linux Node 20 `--test` with plan/inventory/lifecycle/docker/cli test files | Exit 0; 57 passed, 0 failed/skipped | Exercises POSIX fsync/rename/locking and process races. The single Compose client render test was not selected in this Linux run; it passed using the Windows client above |
+| `npm run compose:test` | Exit 0; 60 passed, 0 failed/skipped | Includes schema/topology/admission, real-process races, disk failure, guard/observation/lifecycle doubles, CLI and real Compose config parsing |
+| Linux Node 20 `--test` with plan/inventory/lifecycle/docker/cli test files | Exit 0; 59 passed, 0 failed/skipped | Exercises POSIX fsync/rename/locking and process races. The single Compose client render test was not selected in this Linux run; it passed using the Windows client above |
 | `npm run declarations:test` | Exit 0; 189 passed, 1 Linux-only FIFO skip, 0 failed | ES1 tests and contract unchanged |
 | `npm run architecture:test` | Exit 0; 104 passed, 0 failed/skipped | Existing dependency/schema guardrails unchanged |
 | `npm run architecture:check` | Exit 0; 10 module manifests validated | No existing metadata changes |
@@ -32,6 +32,13 @@ definition error; the schema was corrected without disabling strict mode. The
 first client-render assertion assumed numeric memory output; Compose returned an
 equivalent decimal string, so the new assertion now compares its byte value.
 These initial failures are not represented as passing runs.
+
+Independent review reproduced an integer CPU comparison error at 1,001 millis
+and an inspection-order-dependent lifecycle ID. Both new regressions failed
+(20 passed, 2 failed in the targeted run) before correction, then passed in the
+final Windows/Linux runs above. An intermediate Windows run had 59 passed and
+1 CLI child-process `ETIMEDOUT`; the unchanged rerun passed all 60. The timeout
+was not reproduced, and its environmental cause remains unconfirmed.
 
 ## Ownership, concurrency and failure evidence
 
@@ -79,9 +86,14 @@ runtime evidence are required before claiming ES2 conformance. ES3 is not begun.
 
 ## Review, security and compatibility
 
-Independent review must check full-tuple ownership, atomic claims, failure
-isolation, context pinning, resource/status claims and accidental destructive
-behavior. The local store assumes a trusted operator and private local filesystem;
+Independent review of `c9ba057..d50ef65` checked full-tuple ownership, atomic
+claims, failure isolation, context pinning, resource/status claims and accidental
+destructive behavior, and independently passed the then-current 58 tests. The
+CPU comparison and lifecycle ordering findings were corrected with regressions.
+No further blocking issue was found within the documented trust boundary.
+Observation verifies CPU/memory/PID configuration and the explicit ownership/
+network/mount/privilege gates; it does not verify all generated hardening settings
+or kernel enforcement. The local store assumes a trusted operator and private local filesystem;
 root/daemon compromise, multiple independent registries, network filesystems and
 distributed writers are outside its guarantee. Retained claims are not released
 by printed lifecycle intentions; manual state deletion is unsafe capacity recovery.

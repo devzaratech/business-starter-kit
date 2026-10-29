@@ -41,12 +41,14 @@ test('all inspection calls are explicitly context scoped and read-only; failures
   assert.ok(calls.every(c => !c.some(arg => ['up', 'down', 'rm', 'prune', 'stop', 'kill'].includes(arg))));
 });
 
-test('normalizes real Docker inspection shapes, deduplicates IDs and captures version fields', () => {
-  const plan = buildPlan(request());
+for (const cpuMillis of [250, 1001]) test(`normalizes Docker CPU ${cpuMillis} millis, deduplicates IDs and captures version fields`, () => {
+  const input = request();
+  for (const workload of input.workloads) workload.resources.cpuLimitMillis = cpuMillis;
+  const plan = buildPlan(input);
   const raw = runtimeObjects(plan).map(o => {
     const id = createHash('sha256').update(`${o.kind}:${o.name}`).digest('hex');
     if (o.kind === 'container') return { kind: o.kind, Id: id, Name: `/${o.name}`, Config: { Labels: o.labels },
-      HostConfig: { NanoCpus: 250000000, Memory: 33554432, PidsLimit: 32, Privileged: false, NetworkMode: 'bridge' },
+      HostConfig: { NanoCpus: cpuMillis * 1000000, Memory: 33554432, PidsLimit: 32, Privileged: false, NetworkMode: 'bridge' },
       NetworkSettings: { Networks: Object.fromEntries(o.networks.map(n => [n, {}])), Ports: { '8080/tcp': null } },
       Mounts: o.mounts.map(name => ({ Type: 'volume', Name: name })) };
     return { kind: o.kind, Id: id, Name: o.name, Labels: o.labels, Internal: true, Driver: 'bridge', Containers: {} };

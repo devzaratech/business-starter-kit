@@ -4,7 +4,7 @@ export function runtimeObjects(plan) {
   for (const [service, s] of Object.entries(plan.compose.services)) {
     for (let i = 1; i <= s.deploy.replicas; i++) objects.push({ kind: 'container', name: `${plan.scope}-${service}-${i}`,
       id: `${service}-${i}`, labels: { ...s.labels, ...project, 'com.docker.compose.service': service },
-      limits: { cpuMillis: s.cpus * 1000, memoryBytes: s.mem_limit, pids: s.pids_limit },
+      limits: { cpuMillis: plan.workloads.find(w => w.name === service).resources.cpuLimitMillis, memoryBytes: s.mem_limit, pids: s.pids_limit },
       networks: s.networks.map(n => plan.compose.networks[n].name),
       privileged: false, hostNetwork: false, ports: [], mounts: (s.volumes ?? []).map(v => plan.compose.volumes[v.source].name) });
   }
