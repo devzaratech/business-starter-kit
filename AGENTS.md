@@ -3,7 +3,8 @@
 ## Start here
 - The sole active long-term implementation roadmap is [BSK Agent Master Plan](docs/superpowers/plans/2026-10-28-bsk-agent-master-plan.md).
 - Check existing accepted ADRs and code before taking any task; the roadmap describes planned work, not deployed features.
-- First assignment is **PR0 (architecture inventory, contracts, ADRs and tests)** only. Do not combine PR1–PR12 into one task.
+- First assignment is **PR0 (architecture inventory, contracts, ADRs and tests)** only. Do not combine PR1–PR12 or business verticals into one task.
+- Business verticals have a separate [specification](docs/superpowers/specs/bsk-business-verticals.md): `examples/` are currently **documentation-only**; CRM Lite is the first planned full-stack vertical once shared contracts and delivery are ready. Do not claim verticals implemented without code and tested user journeys.
 - Follow `docs/architecture/`, `contracts/schemas/`, `bsk.module.json` and the public-core Apache-2.0 dependency constraints.
 
 ## Safety and workflow
