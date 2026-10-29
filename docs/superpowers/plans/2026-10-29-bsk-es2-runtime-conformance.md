@@ -18,34 +18,34 @@ runtime gate, never an assumed passing result.
 
 ## Task 1: Pure safety and evidence contracts
 
-- [ ] Write/run failing tests for owner/manual-event/SHA/hosted-Linux authorization,
+- [x] Write/run failing tests for owner/manual-event/SHA/hosted-Linux authorization,
   context/engine pinning, full ownership before cleanup, bounded cgroup evidence,
   immutable images, unique two-project fixtures and fail/blocked aggregation.
-- [ ] Implement `scripts/compose/runtime/{guard,fixtures,probes}.mjs`, the pinned
+- [x] Implement `scripts/compose/runtime/{guard,fixtures,probes}.mjs`, the pinned
   image catalog, synthetic fixture Dockerfile/Python source and unit tests.
-- [ ] Run non-destructive tests and commit the tested contract.
+- [x] Run non-destructive tests and commit the tested contract.
 
 ## Task 2: Bounded runtime orchestrator
 
-- [ ] Write/run failing tests for command target enforcement, environment filtering,
+- [x] Write/run failing tests for command target enforcement, environment filtering,
   timeout/error recording and partial-failure cleanup protections.
-- [ ] Implement `runtime/harness.mjs` and `runtime/run.mjs`: fresh DinD bootstrap,
+- [x] Implement `runtime/harness.mjs` and `runtime/run.mjs`: fresh DinD bootstrap,
   local-only registry for a digest-addressed synthetic image, actual driver
   inventory/plans, runtime inspection, cgroup/load probes, lateral/public denials,
   foreign/missing-BSK-label rejection, scoped stop/down/data preservation and
   verified cleanup. Test doubles prove orchestration only, not conformance.
-- [ ] Every command is fixed argv, context/engine checked and timeout bounded;
+- [x] Every command is fixed argv, context/engine checked and timeout bounded;
   each result has passed/failed/blocked status. Failure never implies success.
-- [ ] Run non-destructive tests and commit.
+- [x] Run non-destructive tests and commit.
 
 ## Task 3: Opt-in workflow and reviewable handoff
 
-- [ ] Write/run failing workflow contract tests, then add a `workflow_dispatch`-only
+- [x] Write/run failing workflow contract tests, then add a `workflow_dispatch`-only
   workflow with exact owner confirmation/SHA, hosted runner guard, timeout,
   artifact upload and no PR/push/schedule trigger. Ordinary CI runs unit tests only.
-- [ ] Document exact invocation, first-dispatch default-branch constraint, evidence,
+- [x] Document exact invocation, first-dispatch default-branch constraint, evidence,
   remaining secret/storage gaps, cleanup/rollback and authorization boundary.
-- [ ] Run existing applicable suites; independent review; commit/push and open PR.
+- [x] Run existing applicable suites; independent review; commit/push and open PR.
   Do not dispatch the runtime workflow. Record actual local/hosted results apart
   from not-run runtime checks. ES2 remains unproven pending reviewed evidence.
 

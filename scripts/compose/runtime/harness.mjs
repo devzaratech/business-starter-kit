@@ -19,7 +19,10 @@ const idPattern = /^[a-f0-9]{64}$/;
 export class Harness {
   constructor(permit, session = new DockerSession(permit)) {
     this.permit = permit; this.docker = session; this.checks = []; this.aux = []; this.plans = [];
-    this.gaps = ['Secret refs have no backend in the merged driver; positive secret-ref acceptance remains unimplemented.'];
+    this.gaps = [
+      'Secret refs have no backend in the merged driver; positive secret-ref acceptance remains unimplemented.',
+      'Expected-resource label drift at unchanged cardinality has unit coverage only; runtime ownership negatives reject scoped extra volumes.'
+    ];
   }
   save(name, value) { writeFileSync(join(this.root, `${name}.json`), json(value), { mode: 0o600 }); }
   async check(name, fn) {

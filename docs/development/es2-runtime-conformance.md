@@ -104,7 +104,7 @@ already bound to the workflow event and create a new attempt namespace.
 | Ownership and topology | Actual container/network/volume labels and names; ingress/data bridge separation; no published data ports or unmanaged mounts; exact inspect CPU/memory/PID values |
 | Cgroups/load | `cpu.max`, `memory.max`, `pids.max`, CPU/memory/PID event counters for each workload; bounded 4-second CPU load increases throttling and usage; at most 64 attempted forks hit PID denial; at most 96 MiB allocation in a 64 MiB cgroup exits 137 and increases OOM kills |
 | Connectivity | Positive same-project HTTP/data probes first; A cannot connect to B's known-live data IP:8080; a run-owned default-bridge probe outside both private networks cannot connect either. Any successful TCP connection fails a negative probe immediately; an HTTP stall cannot count as denial |
-| Ownership rejection | Actual extra volumes in A's Compose scope, one with foreign BSK ownership and one missing BSK labels, cause `OWNERSHIP` before a destroy intent; both still exist afterward. They retain separate harness-run labels for safe cleanup |
+| Ownership rejection | Actual extra volumes in A's Compose scope, one with foreign BSK ownership and one missing BSK labels, cause `OWNERSHIP` before a destroy intent; both still exist afterward. They retain separate harness-run labels for safe cleanup. These cases exercise unexpected-resource count rejection before label comparison; expected-resource label drift at unchanged cardinality has unit coverage only |
 | Lifecycle/data | Guarded stop and down intentions for A are executed by the test-only harness; no volume actions; B's HTTP and data endpoints remain available; A recreated from the same model sees the same marker; both distinct volume checksums and inventory are unchanged |
 | Daemon failure/cleanup | After fixture cleanup, the verified DinD container is stopped; the actual driver reader must reject the unavailable daemon with `DOCKER_READ`. Outer sandbox/data removal then checks recorded IDs and labels again |
 
@@ -138,6 +138,9 @@ platform. Cancellation, process death or the job deadline can prevent the final
 cleanup/evidence snapshot; incomplete artifacts are not conformance. Do not
 manually reuse such a daemon or run global cleanup to compensate.
 
+Remaining evidence gaps include actual label-drift rejection on an expected
+resource at unchanged cardinality; the existing lifecycle unit tests cover that
+case, while these runtime negatives test scoped extra-resource rejection.
 Remaining acceptance gaps include positive **secret refs**, which the merged
 driver rejects because no backend exists, advisory storage budgets, actual
 runtime execution/review and any failed/blocked probes. This harness does not

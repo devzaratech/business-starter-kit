@@ -56,6 +56,7 @@ while still performing verified sandbox cleanup. The final suite passed 84/84.
 | CPU throttling, PID exhaustion and OOM counters under bounded load | Not run |
 | Same-project availability and cross-project/public-bridge data denials | Not run |
 | Foreign/missing-BSK-label destroy rejection against actual Docker volumes | Not run |
+| Expected-resource label-drift rejection with unchanged resource count | Unit coverage only; not exercised by the extra-volume runtime negatives |
 | A stop/down preserving B and both distinct volume checksums | Not run |
 | Actual daemon outage rejection and verified fixture cleanup | Not run |
 | Positive secret-ref behavior | Unsupported by merged driver; acceptance gap remains |
@@ -71,7 +72,21 @@ deployment risks remain open. No ES3 work or production authorization is include
 
 Independent review of `5da56de..b760ab9` independently passed the then-current
 22 harness tests and found the two issues documented above. The findings were
-corrected with regressions; focused re-review and new-PR hosted checks are pending.
-They must remain separate from the not-run runtime table above.
+corrected with regressions. Hosted checks remain separate from the not-run
+runtime table above.
 Opening a PR can run ordinary non-destructive CI only; it cannot opt into the
 manual DinD job. Do not dispatch runtime as part of publishing or reviewing code.
+
+Focused independent re-review of `81f035a` confirmed both fixes, independently
+passed 24/24 harness tests and reproduced the corrected Python probe semantics
+with socket mocks (no network). No further blocking finding was identified for
+the preparation PR. The reviewer identified the extra-volume/label-drift evidence
+distinction above; it is now explicit in the runbook and generated result gaps.
+
+[PR #10](https://github.com/devzaratech/business-starter-kit/pull/10) publishes the
+harness. [Ordinary CI run 40829124908](https://github.com/devzaratech/business-starter-kit/actions/runs/40829124908)
+tested implementation revision `81f035a2d1f2e9f9b056d8a45e86a8ab993ebfff`.
+Linux/Windows architecture, ES1 and Compose/harness tests, Java tests, workspace
+tests/build and legacy Compose validation passed. Optional SonarQube analysis
+was skipped after its configuration check. This run did not invoke the manual
+runtime workflow and supplies no Docker runtime conformance evidence.
