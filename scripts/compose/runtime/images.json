@@ -1,0 +1,9 @@
+{
+  "platform": "linux/amd64",
+  "dind": "docker.io/library/docker@sha256:2a232a42256f70d78e3cc5d2b5d6b3276710a0de0596c145f627ecfae90282ac",
+  "python": "docker.io/library/python@sha256:8bcfa47b04b853a17aaf909362b847b2112fd6ec4105ea553ef9a43bafbb5916",
+  "registry": "docker.io/library/registry@sha256:d4032d4cc323c1731c707931ecada07a53076eac38e3b61ae57533f170f2c6c3",
+  "resolvedFrom": { "dind": "docker:28.5.2-dind", "python": "python:3.13-alpine", "registry": "registry:3" },
+  "resolvedAt": "2026-10-29",
+  "source": "Docker Hub Registry v2 anonymous manifest response Docker-Content-Digest; multi-platform index pinned and linux/amd64 selected at pull"
+}
