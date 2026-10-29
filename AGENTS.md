@@ -3,9 +3,13 @@
 ## Start here
 - The sole active long-term implementation roadmap is [BSK Agent Master Plan](docs/superpowers/plans/2026-10-28-bsk-agent-master-plan.md).
 - Check existing accepted ADRs and code before taking any task; the roadmap describes planned work, not deployed features.
-- First assignment is **PR0 (architecture inventory, contracts, ADRs and tests)** only. Do not combine PR1–PR12 or business verticals into one task.
-- Business verticals have a separate [specification](docs/superpowers/specs/bsk-business-verticals.md): `examples/` are currently **documentation-only**; CRM Lite is the first planned full-stack vertical once shared contracts and delivery are ready. Do not claim verticals implemented without code and tested user journeys.
+- First assignment is **PR0 / ES0 (architecture audit, minimal contracts, threat boundaries and tests)** only. After review, complete **Engineering Vertical Slices ES1–ES6** before implementing any business vertical. Never bundle PR1–PR12 into one task.
+- **Engineering Vertical Slices** are platform conformance tests with synthetic non-business workloads; the Engineering Golden Path Baseline (EGPB) covers ES0–ES6.
+- **Business verticals** have a separate [specification](docs/superpowers/specs/bsk-business-verticals.md): `examples/` are documentation-only, and CRM Lite is the first planned product **after** EGPB. Do not implement or claim business apps before the gate.
 - Follow `docs/architecture/`, `contracts/schemas/`, `bsk.module.json` and the public-core Apache-2.0 dependency constraints.
+
+## Language policy
+- All repository documentation, technical proposals, ADRs, code comments, user-facing platform text and pull-request descriptions must be written in **English**. The language of a chat with the project owner does not change this repository-wide rule.
 
 ## Safety and workflow
 - Always work on a feature branch with a reviewable pull request. Do not push directly to `main`.
