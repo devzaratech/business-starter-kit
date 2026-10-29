@@ -1,13 +1,13 @@
-# BSK — Plan maestro v3 para agentes de código: PaaS/IDP multi-proyecto, CI/CD por proyecto y gobierno de recursos
+# BSK — Plan maestro para agentes de código: PaaS/IDP multi-proyecto, CI/CD por proyecto y gobierno de recursos
 
 **Fecha:** 28 de octubre de 2026  
 **Repositorio:** `devzaratech/business-starter-kit` (privado)  
 **Baseline verificada:** `main` → `2559b6a175489a24a9437323edee954b79cfdaad` (30-09-2026), sin PR abiertos al momento de la revisión.  
-**Estado de este documento:** propuesta integral para implementación; no se declara implementada ninguna función futura. **Alcance consolidado:** añade como requisito de primera clase múltiples proyectos por host, múltiples dominios y servicios por proyecto, un proxy de borde por host, y la política Tailscale como conectividad privada. Esta **v3** es la única fuente principal para nuevas implementaciones: añade CI/CD por proyecto, presupuestos y cuotas por proyecto/ambiente, reconciliación, catálogo de golden paths, criterios de madurez y un plan de entregas verificables.
+**Estado de este documento:** propuesta integral para implementación; no se declara implementada ninguna función futura. **Alcance consolidado:** añade como requisito de primera clase múltiples proyectos por host, múltiples dominios y servicios por proyecto, un proxy de borde por host, y la política Tailscale como conectividad privada. Este es el plan maestro principal para nuevas implementaciones e incluye CI/CD por proyecto, presupuestos y cuotas por proyecto/ambiente, reconciliación, catálogo de golden paths, criterios de madurez y un plan de entregas verificables.
 
 **Restricción operativa:** no ejecutar scripts, modificar DNS/Tailnet, conectar VPS ni abrir servicios públicos en PR0–PR2. Todas las pruebas con infraestructura deben ser locales/efímeras hasta aprobación específica.
 
-## 0A. Decisión de producto y alcance definitivo (v3)
+## 0A. Decisión de producto y alcance definitivo
 
 **Definición:** BSK es una plataforma abierta de ingeniería y operación de aplicaciones (*Internal Developer Platform + PaaS*), con Control Plane, Dashboard, CLI, API y una interfaz de automatización para agentes con permisos restringidos. No es un clon de interfaz de Coolify ni una reimplementación monolítica de Kubernetes o Humanitec.
 
@@ -23,7 +23,7 @@
 
 ## 0. Fuente principal para agentes
 
-**Este documento v3 es el único plan maestro vigente que debe agregarse para iniciar el trabajo.** Consolida los requisitos de las versiones anteriores (ambientes dinámicos, proyectos/servicios/dominios múltiples por VPS, Tailscale, panel web, CI/CD por proyecto, límites de recursos, Kubernetes, multi-cloud, observabilidad, WordPress/IA y compliance). **Los archivos v1/v2 y los documentos externos históricos no son requisitos para ejecutar PR0.**
+**Este es el plan maestro vigente para iniciar el trabajo.** Incluye ambientes dinámicos, múltiples proyectos, servicios y dominios por VPS, Tailscale, panel web, CI/CD por proyecto, límites de recursos, Kubernetes, multi-cloud, observabilidad, WordPress/IA y compliance. No requiere documentos externos para ejecutar PR0.
 
 Respeta como fuente de verdad para el **código ya existente** los ADR, esquemas, manifests y scripts versionados del repositorio. Revisa especialmente `docs/architecture/`, `contracts/schemas/`, `docs/ci-cd/`, `docs/environments/` y `infra/`. Ante contradicciones entre esta **hoja de ruta propuesta** y el comportamiento actual, no modifiques ni rompas sistemas silenciosamente: documenta un ADR y presenta el cambio en un PR para revisión.
 
@@ -227,7 +227,7 @@ bsk status --project data-signal --env production
 
 **Comandos puramente ilustrativos.** `host register`, `plan` o `domain attach` no pueden ejecutar instalaciones remotas implícitas; `apply` requiere permisos/autorización/confirmación según criticidad. Nunca escribir claves reales ni hostnames privados en el manifiesto de ejemplo.
 
-## 3B. CI/CD DE CADA PROYECTO: requisito obligatorio y no negociable (v3)
+## 3B. CI/CD DE CADA PROYECTO: requisito obligatorio y no negociable
 
 ### 3B.1 Entidades y modelo
 
@@ -305,7 +305,7 @@ spec:
 - Proyecto con pipelines deshabilitados puede usar despliegue manual aprobado, sin romper otros proyectos.
 - Errores de CI no se confunden con errores de despliegue, ni los despliegues iniciados se registran como completados.
 
-## 3C. RESOURCE GOVERNANCE: cuotas reales por proyecto y ambiente (v3)
+## 3C. RESOURCE GOVERNANCE: cuotas reales por proyecto y ambiente
 
 ### 3C.1 Dos niveles: presupuesto y ejecución
 
@@ -371,7 +371,7 @@ La semántica de suma es obligatoria: el presupuesto de un proyecto engloba **to
 - Cuotas no soportadas (ejemplo: bytes estrictos de volumen en un backend sin quota) no se anuncian como efectivas.
 - Se prueban tres escenarios de capacidad: VPS muy pequeño, VPS compartido y múltiples VPS, con margen para el SO.
 
-## 3D. Control de estado y confiabilidad operacional (v3)
+## 3D. Control de estado y confiabilidad operacional
 
 **Reconciliation loop:** almacenar `desired state`, `observed state`, diff, `operations`, lock/lease de propietario, reconciliación idempotente, backoff y reintento. Operación declarativa sin necesidad de ejecutar scripts del repositorio arbitrariamente. `plan` debe calcular cambios y dependencias; `apply` solo ejecuta un plan firmado/identificable y autorizado; las operaciones peligrosas requieren confirmación y backup.
 
@@ -385,7 +385,7 @@ La semántica de suma es obligatoria: el presupuesto de un proyecto engloba **to
 
 **Modelo multi-host real:** un servicio persistente no se declara altamente disponible por duplicar contenedores. Para multi-VPS requiere estrategia de ingress/LB, sesiones, volúmenes, replicación de DB, migración expand/contract, consistencia, failover verificado y RPO/RTO. Implementación incremental.
 
-## 3E. Experiencia de producto: qué tendrá la consola (v3)
+## 3E. Experiencia de producto: qué tendrá la consola
 
 Paneles operativos mínimos después de los contratos:
 - `Portfolio`: organizaciones, proyectos, owners, ambientes, etiquetas, costes.
@@ -399,7 +399,7 @@ Paneles operativos mínimos después de los contratos:
 
 CLI/API/MCP deben compartir los mismos permisos y controlador; dashboards son lecturas del estado real y operaciones mediadas, no acceso directo a Docker/SSH/Cloudflare.
 
-## 3F. Contratos de adaptador y portabilidad (v3)
+## 3F. Contratos de adaptador y portabilidad
 
 Con interfaces versionadas y `capabilities` negociadas:
 - `SourceProvider` (GitHub/GitLab), `PipelineProvider` (Actions/Jenkins/GitLab), `ArtifactRegistry` (OCI),
@@ -409,7 +409,7 @@ Con interfaces versionadas y `capabilities` negociadas:
 
 Probar una misma aplicación con el **mismo digest OCI** en Compose y K3s. No suponer equivalencia de features no disponibles por driver; exponer `capabilities` efectivas y errores explícitos. Inspirarse en el estándar abierto Score para especificar cargas de trabajo sin convertir Humanitec o Score en dependencia de núcleo.
 
-## 3G. Metodología de entrega para los agentes (v3)
+## 3G. Metodología de entrega para los agentes
 
 Cada cambio incluye:
 1. ADR o especificación pequeña que indique problema, alternativas, tradeoffs y límites.
@@ -421,7 +421,7 @@ Cada cambio incluye:
 
 **Paralelización:** primero freeze del esquema `Project/Service/Environment/Deployment` y de API; después CI/quotas/UI pueden dividirse entre agentes distintos. Evitar que dos agentes editen los mismos contratos en ramas sin sincronización. Prohibidos cambios de producción, DNS y Tailnet sin autorización concreta.
 
-**V3 modifica el roadmap existente así:**
+**Prioridades y secuencia de implementación:**
 - PR0 incorpora ADR de `PipelineDefinition/PipelineRun/Release/Promotion` y `ResourceBudget/Quota/Enforcement`, más matriz `Coolify/Humanitec/BSK` sin declarar superioridad no demostrada.
 - PR1 añade contratos y validadores de recursos/pipelines.
 - PR2 aplica límites Compose y prueba admisión de recursos; ya no basta con aislar contenedores.
@@ -431,7 +431,7 @@ Cada cambio incluye:
 - PR9 agrega presupuesto de hosts, capacidad de placement y estimación de costos multi-host.
 - PR12+ despliega paneles avanzados y SLOs sin adelantarlos a sus servicios API.
 
-## 3H. Gate de lanzamiento: no llamar “PaaS enterprise” a un esqueleto (v3)
+## 3H. Gate de lanzamiento: no llamar “PaaS enterprise” a un esqueleto
 
 **MVP VPS:** 1 host, 3 proyectos, N ambientes, 6 dominios, proxy seguro, recursos aislados, backups restaurables y rollback de despliegue seguro.
 **MVP Platform Developer Experience:** generar app Java+React o Angular; CI por proyecto -> OCI digest -> deploy Compose, pruebas E2E, logs/trazas, límites y secretos por proyecto, dashboard consistente.
@@ -440,7 +440,7 @@ Cada cambio incluye:
 **Compliance-readiness (posterior):** al menos una jurisdicción implementada con revisión legal, evidencia de controles y casos de derechos de titulares; nunca “legalidad automática”.
 **Posicionamiento competitivo:** medir tiempo de primer deploy, cantidad de clics/pasos, tasa de éxito, cambios seguros, restorability, costos por workload, cobertura de seguridad y DX. No afirmar superioridad frente a Coolify/Humanitec sin benchmarking reproducible, comparación de versiones y feedback externo.
 
-**Referencias oficiales v3:**
+**Referencias oficiales:**
 - Coolify límites: https://coolify.io/docs/applications/configuration/resource-limits
 - Coolify Build Servers: https://coolify.io/docs/core/infrastructure/servers/build-servers
 - Humanitec CI/CD: https://developer.humanitec.com/platform-orchestrator/guides/developers/ci-cd/integrate-your-ci/cd-flows/
@@ -608,13 +608,13 @@ La cantidad de proyectos/ambientes es lógicamente ilimitada, pero el Control Pl
 - **PR2:** Compose multi-proyecto y EdgeGateway multi-dominio en un host efímero.
 - **PR3:** Control Plane API y panel Projects/Environments/Services/Domains con RBAC.
 - **PR4:** bootstrap remoto seguro, Cloudflare/Tailscale y protección de SSH.
-- **PR5+:** mantener roadmap previo; CI/CD, Golden Paths, observabilidad, K3s, multicloud, servicios opcionales y privacidad.
+- **PR5+:** continuar este plan maestro con CI/CD, Golden Paths, observabilidad, K3s, multicloud, servicios opcionales y privacidad.
 
 **No paralelizar PR1/PR2 sin congelar los esquemas y las garantías de ownership.** Revisores A0/A7 validan seguridad antes de avanzar a acceso remoto real.
 
 ## 8. Primera orden a Codex / Claude Code: PR0 solamente
 
-> Actúa como arquitecto principal y agente de implementación de BSK. Lee `docs/superpowers/plans/2026-10-28-bsk-agent-master-plan-v3.md`, los ADR, contratos, scripts y documentación ya existentes en el repositorio `devzaratech/business-starter-kit`. Crea la rama `docs/bsk-agent-pr0-architecture`. Ejecuta únicamente PR0: inventario real, matriz de capacidades y dependencias, ADR de `Host/Project/Environment/Service/Deployment/DomainBinding`, gateway por host y separación pública/Tailnet, Control Plane/API/CLI/UI, riesgos, diseño mínimo y secuencia de PR1–PR3. Ejecuta los tests base disponibles; registra resultados sin inventar éxitos. No toques VPS, DNS, Cloudflare, Tailnet ni producción. No implementes todos los módulos. Entrega PR o diff, pruebas ejecutadas, riesgos, decisiones y siguiente PR recomendado. Mantén el núcleo open-core y compatibilidad existente.
+> Actúa como arquitecto principal y agente de implementación de BSK. Lee `docs/superpowers/plans/2026-10-28-bsk-agent-master-plan.md`, los ADR, contratos, scripts y documentación ya existentes en el repositorio `devzaratech/business-starter-kit`. Crea la rama `docs/bsk-agent-pr0-architecture`. Ejecuta únicamente PR0: inventario real, matriz de capacidades y dependencias, ADR de `Host/Project/Environment/Service/Deployment/DomainBinding`, gateway por host y separación pública/Tailnet, Control Plane/API/CLI/UI, riesgos, diseño mínimo y secuencia de PR1–PR3. Ejecuta los tests base disponibles; registra resultados sin inventar éxitos. No toques VPS, DNS, Cloudflare, Tailnet ni producción. No implementes todos los módulos. Entrega PR o diff, pruebas ejecutadas, riesgos, decisiones y siguiente PR recomendado. Mantén el núcleo open-core y compatibilidad existente.
 
 **Orden posterior:** una vez aprobado PR0, entregar a A1 el PR1 de esquema y CLI; luego PR2 de Compose; luego PR3 de API y dashboard inicial. No dar en paralelo a varios agentes permisos de escritura sobre los mismos archivos o servidores.
 
@@ -629,7 +629,7 @@ La cantidad de proyectos/ambientes es lógicamente ilimitada, pero el Control Pl
 
 **Definición de éxito del primer ciclo:** PR0 aprobado, PR1 con múltiples proyectos y ambientes arbitrarios, y PR2 que demuestra 3 proyectos y 3 ambientes en un único VPS desechable con 6 dominios de prueba, 1 proxy y redes privadas aisladas. Después desarrollar API/dashboard y demás capas; no presentar el producto como terminado antes de esas pruebas.
 
-### Referencias ampliadas, modelo heredado de v2
+### Referencias técnicas adicionales
 
 - Docker Compose project name: https://docs.docker.com/compose/how-tos/project-name/
 - Docker Compose networking: https://docs.docker.com/compose/how-tos/networking/
@@ -645,4 +645,4 @@ La cantidad de proyectos/ambientes es lógicamente ilimitada, pero el Control Pl
 - Kubernetes isolation: https://kubernetes.io/docs/concepts/security/multi-tenancy/
 
 ---
-**Nota para los agentes:** esta v3 es la hoja de ruta principal, sujeta a revisión del código real y los ADR aceptados. Si el entorno real difiere del baseline, volver a auditar antes de aplicar cambios. No ejecutar cambios remotos sin autorización específica. El proyecto debe distinguir entre *diseño*, *código validado localmente* y *operación real verificada*.
+**Nota para los agentes:** este documento es la hoja de ruta principal, sujeta a revisión del código real y los ADR aceptados. Si el entorno real difiere del baseline, volver a auditar antes de aplicar cambios. No ejecutar cambios remotos sin autorización específica. El proyecto debe distinguir entre *diseño*, *código validado localmente* y *operación real verificada*.
