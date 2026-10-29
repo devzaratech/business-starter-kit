@@ -16,6 +16,7 @@
     "architecture:test": "cd scripts/architecture && node --test",
     "architecture:check": "node scripts/architecture/check.mjs --root .",
     "declarations:test": "cd scripts/declarations && node --test",
+    "compose:test": "cd scripts/compose && node --test",
     "infrastructure:test": "cd scripts/quality && node --test",
     "build": "npm run build --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present"
