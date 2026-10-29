@@ -1,8 +1,8 @@
 # Agent instructions for Business Starter Kit (BSK)
 
 ## Start here
-- The sole active long-term implementation roadmap is [BSK Agent Master Plan v3](docs/superpowers/plans/2026-10-28-bsk-agent-master-plan-v3.md).
-- Historical plans v1/v2 are **not** required. Check existing accepted ADRs and code before taking any task; the roadmap describes planned work, not deployed features.
+- The sole active long-term implementation roadmap is [BSK Agent Master Plan](docs/superpowers/plans/2026-10-28-bsk-agent-master-plan.md).
+- Check existing accepted ADRs and code before taking any task; the roadmap describes planned work, not deployed features.
 - First assignment is **PR0 (architecture inventory, contracts, ADRs and tests)** only. Do not combine PR1–PR12 into one task.
 - Follow `docs/architecture/`, `contracts/schemas/`, `bsk.module.json` and the public-core Apache-2.0 dependency constraints.
 
