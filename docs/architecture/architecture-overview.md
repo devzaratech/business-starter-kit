@@ -1,5 +1,10 @@
 # Architecture Overview
 
+For the source-audited implementation status, proposed resource contracts and
+ES1–ES6 acceptance gates, see the [PR0 / ES0 review](es0/README.md). The target
+capabilities described below are not all implemented; that review distinguishes
+working examples, incomplete components and planned behavior.
+
 Business Starter Kit is a modular SaaS foundation designed around a clean separation between platform capabilities and business products.
 
 ## Architecture Goal
