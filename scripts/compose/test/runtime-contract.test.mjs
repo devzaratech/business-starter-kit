@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { authorize, verifyOwner, assertEngine, resultStatus } from '../runtime/guard.mjs';
 import { fixtures } from '../runtime/fixtures.mjs';
-import { cgroupValues, verifyCgroup, verifyLoad } from '../runtime/probes.mjs';
+import { cgroupValues, verifyCgroup, verifyLoad, connectProbe } from '../runtime/probes.mjs';
 
 const sha = 'a'.repeat(40);
 const env = () => ({ GITHUB_ACTIONS: 'true', RUNNER_ENVIRONMENT: 'github-hosted', RUNNER_OS: 'Linux',
@@ -68,4 +68,11 @@ test('failed, blocked and absent acceptance checks never aggregate to conformanc
   assert.equal(resultStatus([{ status: 'blocked' }], []), 'blocked');
   assert.equal(resultStatus([], []), 'incomplete');
   assert.equal(resultStatus([{ status: 'passed' }], []), 'demonstrated');
+});
+
+test('negative connectivity is decided by TCP establishment without an application read', () => {
+  const code = connectProbe('172.20.0.2', false);
+  assert.match(code, /socket\.create_connection/);
+  assert.doesNotMatch(code, /\.sendall\(|\.recv\(/);
+  assert.match(code, /else:\n s\.close\(\); raise RuntimeError\('private endpoint reachable'\)/);
 });

@@ -262,7 +262,7 @@ export class Harness {
     for (const record of this.aux.reverse()) { try { this.docker.removeOwned(record); } catch (e) { errors.push({ resource: record.id, code: e.code ?? 'CLEANUP' }); } }
     // A failure leaves the sandbox for the ephemeral runner's disposal; do not bypass ownership failures.
     let daemonUnavailableRejection = null;
-    if (!errors.length && this.reader && this.outerContainer) {
+    if (!errors.length && this.reader && this.outerContainer && this.plans.length > 0) {
       this.docker.inspect(this.outerContainer, true);
       this.docker.outer(['container', 'stop', '--time', '5', this.outerContainer.id]);
       try { this.reader.resources(this.plans[0]); } catch (e) { daemonUnavailableRejection = e.code; }

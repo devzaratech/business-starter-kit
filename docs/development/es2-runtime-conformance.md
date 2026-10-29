@@ -39,7 +39,7 @@ sandbox has 2 CPUs, 2 GiB memory and 512 PIDs; workload probes have stricter
 limits. This is unsuitable for hostile workloads, self-hosted runners or an
 existing daemon. No production access is authorized by this document.
 
-## Supported first matrix and synthetic image
+## Prepared first matrix and synthetic image
 
 The first target is GitHub-hosted `ubuntu-24.04`, `linux/amd64`, cgroup v2,
 overlay2 and the pinned Docker `28.5.2-dind` index in
@@ -103,7 +103,7 @@ already bound to the workflow event and create a new attempt namespace.
 | Plans and inventory | Two independent projects with different environment names; driver-generated configs and separate full-tuple claims; host headroom; capacity/rollout overlap/raw privilege/storage enforce rejected without changing the live ledger |
 | Ownership and topology | Actual container/network/volume labels and names; ingress/data bridge separation; no published data ports or unmanaged mounts; exact inspect CPU/memory/PID values |
 | Cgroups/load | `cpu.max`, `memory.max`, `pids.max`, CPU/memory/PID event counters for each workload; bounded 4-second CPU load increases throttling and usage; at most 64 attempted forks hit PID denial; at most 96 MiB allocation in a 64 MiB cgroup exits 137 and increases OOM kills |
-| Connectivity | Positive same-project HTTP/data probes first; A cannot connect to B's known-live data IP:8080; a run-owned default-bridge probe outside both private networks cannot connect either |
+| Connectivity | Positive same-project HTTP/data probes first; A cannot connect to B's known-live data IP:8080; a run-owned default-bridge probe outside both private networks cannot connect either. Any successful TCP connection fails a negative probe immediately; an HTTP stall cannot count as denial |
 | Ownership rejection | Actual extra volumes in A's Compose scope, one with foreign BSK ownership and one missing BSK labels, cause `OWNERSHIP` before a destroy intent; both still exist afterward. They retain separate harness-run labels for safe cleanup |
 | Lifecycle/data | Guarded stop and down intentions for A are executed by the test-only harness; no volume actions; B's HTTP and data endpoints remain available; A recreated from the same model sees the same marker; both distinct volume checksums and inventory are unchanged |
 | Daemon failure/cleanup | After fixture cleanup, the verified DinD container is stopped; the actual driver reader must reject the unavailable daemon with `DOCKER_READ`. Outer sandbox/data removal then checks recorded IDs and labels again |

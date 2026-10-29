@@ -55,10 +55,8 @@ export function connectProbe(ip, allowed) {
   return `import socket
 try:
  s=socket.create_connection((${JSON.stringify(ip)},8080),2)
- s.sendall(b'GET / HTTP/1.0\\r\\nHost: fixture\\r\\n\\r\\n')
- body=s.recv(4096); s.close()
 except (TimeoutError,ConnectionRefusedError,OSError):
  ${allowed ? "raise RuntimeError('positive connectivity failed')" : "print('DENIED')"}
 else:
- ${allowed ? "assert b'200 OK' in body; print('AVAILABLE')" : "raise RuntimeError('private endpoint reachable')"}`;
+ ${allowed ? "s.sendall(b'GET / HTTP/1.0\\r\\nHost: fixture\\r\\n\\r\\n'); body=s.recv(4096); s.close(); assert b'200 OK' in body; print('AVAILABLE')" : "s.close(); raise RuntimeError('private endpoint reachable')"}`;
 }
