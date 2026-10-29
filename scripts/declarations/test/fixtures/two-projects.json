@@ -1,0 +1,19 @@
+{
+  "apiVersion": "bsk/v0alpha1",
+  "resources": [
+    { "apiVersion": "bsk/v0alpha1", "kind": "Project", "metadata": { "name": "fixture-a", "installationRef": "fixture-install" }, "spec": { "ownerRef": "fixture-team" } },
+    { "apiVersion": "bsk/v0alpha1", "kind": "Project", "metadata": { "name": "fixture-b", "installationRef": "fixture-install" }, "spec": { "ownerRef": "fixture-team" } },
+    { "apiVersion": "bsk/v0alpha1", "kind": "Environment", "metadata": { "name": "review-142", "installationRef": "fixture-install", "projectRef": "fixture-a" }, "spec": { "policyRef": "disposable" } },
+    { "apiVersion": "bsk/v0alpha1", "kind": "Environment", "metadata": { "name": "review-142", "installationRef": "fixture-install", "projectRef": "fixture-b" }, "spec": { "policyRef": "disposable" } },
+    { "apiVersion": "bsk/v0alpha1", "kind": "Service", "metadata": { "name": "http", "installationRef": "fixture-install", "projectRef": "fixture-a" }, "spec": { "runtimeRef": "fixture-http", "port": 8080 } },
+    { "apiVersion": "bsk/v0alpha1", "kind": "Service", "metadata": { "name": "http", "installationRef": "fixture-install", "projectRef": "fixture-b" }, "spec": { "runtimeRef": "fixture-http", "port": 8080 } }
+  ],
+  "catalog": {
+    "policies": ["disposable"],
+    "runtimes": ["fixture-http"],
+    "routes": [
+      { "installationRef": "fixture-install", "projectRef": "fixture-a", "environmentRef": "review-142", "serviceRef": "http", "hostname": "a.example.test", "pathPrefix": "/", "visibility": "public", "stripPrefix": false },
+      { "installationRef": "fixture-install", "projectRef": "fixture-b", "environmentRef": "review-142", "serviceRef": "http", "hostname": "b.example.test", "pathPrefix": "/api", "visibility": "private", "stripPrefix": true }
+    ]
+  }
+}
