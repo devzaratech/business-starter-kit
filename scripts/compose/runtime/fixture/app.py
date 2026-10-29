@@ -1,11 +1,12 @@
 """Synthetic HTTP/data endpoint. No external dependencies or business behavior."""
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
+from uuid import uuid4
 
 data = Path('/data') if Path('/data').is_dir() else Path('/tmp')
 marker = data / 'marker'
 if not marker.exists():
-    marker.write_text('bsk-es2-synthetic-persistent-marker\n')
+    marker.write_text(f'bsk-es2-synthetic-persistent-marker:{uuid4()}\n')
 
 
 class Handler(BaseHTTPRequestHandler):
