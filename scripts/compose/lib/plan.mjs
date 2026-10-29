@@ -69,6 +69,7 @@ export function buildPlan(input) {
   }
   const usage = sumUsage(workloads, false);
   const requested = sumUsage(workloads, true);
+  if (workloads.reduce((n, w) => n + w.resources.replicas, 0) > 1000) fail('DRIVER_LIMIT');
   const compose = { name: scope, services: {}, networks: {}, volumes: {} };
   for (const name of ['ingress', 'data']) compose.networks[name] = { name: `${scope}-${name}`, driver: 'bridge', internal: true, labels: labels(t, scope) };
   for (const w of workloads) {
