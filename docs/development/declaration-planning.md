@@ -76,7 +76,8 @@ Its project/environment/service must exist in scope. These are offline claims,
 not gateway configuration or proof of domain ownership.
 
 Hostname policy requires lowercase ASCII DNS labels, a dot, <=253 characters,
-and no IP literal, wildcard, URL, userinfo, port or trailing dot. Path prefixes
+and no IP literal (including numeric/hex/octal aliases), wildcard, URL, userinfo,
+port or trailing dot. Path prefixes
 are `/` or slash-delimited ASCII letters/digits/underscore/hyphen segments,
 without encodings, dot segments, regex, query, repeated/trailing slashes or fragment.
 A hostname belongs to one project/environment per installation. That owner may

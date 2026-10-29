@@ -171,3 +171,9 @@ test('diagnostics do not echo values and are reproducibly ordered', () => {
   assert.doesNotMatch(JSON.stringify(result), /fake-secret/);
   assert.ok(result.diagnostics.some(d => d.path === '/resources/2/spec/policyRef'));
 });
+
+for (const hostname of ['127.1', '127.0.1', '0x7f.1', '0177.1', '0x7f.0x0.0x0.0x1', '1.0xffffffff']) {
+  test(`rejects alternate numeric host representation ${hostname}`, () => {
+    const b = fixture(); b.catalog.routes[0].hostname = hostname; denied(b, 'SCHEMA');
+  });
+}

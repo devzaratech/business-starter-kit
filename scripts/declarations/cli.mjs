@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { openSync, fstatSync, readSync, closeSync } from 'node:fs';
+import { constants, openSync, fstatSync, readSync, closeSync } from 'node:fs';
 import { validateBundle } from './lib/validate.mjs';
 import { planBundle } from './lib/plan.mjs';
 
@@ -19,7 +19,8 @@ function fail(code) {
 function readInput(file) {
   let fd;
   try {
-    fd = openSync(file, 'r');
+    // A FIFO must not block before its descriptor can be checked for regular-file type.
+    fd = openSync(file, constants.O_RDONLY | (constants.O_NONBLOCK ?? 0));
     const info = fstatSync(fd);
     if (!info.isFile()) return { error: 'READ' };
     if (info.size > MAX_BYTES) return { error: 'SIZE' };

@@ -9,13 +9,17 @@ as an additive declaration schema, pure evaluator/planner and read-only CLI.
 
 Local environment: Windows PowerShell, Node `v24.22.1`, npm `11.19.1`, Docker
 Compose `v5.5.1`. Existing locked dependencies were used; none was added or
-updated. Linux/Windows Node 20 checks are wired into the existing GitHub Actions
+updated. An official Linux Node `v20.20.2` archive was downloaded and checked
+against its published SHA-256 into ignored scratch space for local Ubuntu/WSL
+tests; it is not a repository dependency or a deployment change.
+Linux/Windows Node 20 checks are wired into the existing GitHub Actions
 architecture job. Local Node 24 evidence is not a substitute for those hosted
 checks. Jenkins runs the same declaration command after its locked install.
 
 | Check | Actual result | Scope / limit |
 |---|---|---|
-| `npm run declarations:test` | Exit 0; 183 passed, 0 failed/skipped | 141 validation, 16 planner and 26 CLI tests; helpers are outside test discovery |
+| `npm run declarations:test` (Windows / Node 24) | Exit 0; 189 passed, 0 failed, 1 skipped | 147 validation, 16 planner and 26 CLI tests passed; Linux-only FIFO regression skipped |
+| `node --test` from `scripts/declarations` (Ubuntu/WSL / Node 20.20.2) | Exit 0; 190 passed, 0 failed/skipped | Same full suite including all 27 CLI tests and the real FIFO case; helpers are outside test discovery |
 | `npm run architecture:test` | Exit 0; 104 passed, 0 failed/skipped | Existing schema/dependency/CI governance suite unchanged |
 | `npm run architecture:check` | Exit 0; 10 modules validated | No existing module metadata changes |
 | `npm test` | Exit 0 on authorized retry; 4 passed, 0 failed/skipped | Node 1, web 2, worker 1; initial sandbox loopback `EACCES` blocked Node health test |
@@ -36,8 +40,9 @@ run. No production or external infrastructure was accessed.
 Each task's tests ran before its implementation: validation and planner tests
 failed on their missing modules; CLI subprocess tests failed on the missing CLI
 and its absent exit/result behavior. After implementation all corresponding tests
-passed. The full declaration run above followed all three tasks and the helper
-relocation out of Node's automatic test discovery.
+passed. The initial combined suite passed 183 tests before final review. The
+final full declaration runs above include six IP-alias regressions and one FIFO
+regression from review, plus helper relocation out of automatic test discovery.
 
 Tests exercise two projects with 1, 5 and 10 arbitrary environments each; equal
 names across scopes; unknown/foreign references; closed fields/types/versions;
@@ -59,7 +64,24 @@ and plans six declaration actions with ID
 Each action reports `runtimeChecks: "not-evaluated"`; invalid plans have a null ID
 and empty actions. No apply/operation success or resource enforcement is implied.
 
-## Review and remaining gates
+## Independent review, fixes and remaining gates
+
+A fresh read-only reviewer ran the initial 183-test suite and reviewed the full
+branch. Two substantive findings were addressed in one focused fix pass:
+
+- Alternative numeric/hex/octal IPv4 host spellings bypassed the original
+  four-decimal-component exclusion. Six new regression cases failed before the
+  schema fix and passed after it. They now fail closed; the valid fixture's plan
+  identity is unchanged.
+- A Linux FIFO could block synchronous open before descriptor type inspection.
+  The real FIFO regression timed out after three seconds before the fix, then
+  passed after nonblocking open was added. The complete Linux Node 20 suite also
+  passed; this result was not inferred from the Windows skip.
+
+The reviewer found no broader scoped-identity, canonical-planning, compatibility
+or CI integration issues, and did not certify historical TDD or hosted/runtime
+claims. No minor findings were deferred. Local Windows Maven and security audit
+limitations in the table remain unresolved; no baseline assertions were weakened.
 
 The final review checks full scoped identities, canonical output, redaction,
 compatibility, filesystem effects, CI integration and unintended changes against

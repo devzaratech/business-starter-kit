@@ -103,3 +103,16 @@ for (const file of ['missing-fake-secret.json', '.']) {
     assert.doesNotMatch(r.stderr, /fake-secret|bsk-es1-cli-/);
   });
 }
+
+test('rejects a FIFO without waiting for a writer', { skip: process.platform === 'win32' }, t => {
+  const root = setup(t); const pipe = join(root, 'input.pipe');
+  const created = spawnSync('mkfifo', [pipe], { encoding: 'utf8' });
+  assert.equal(created.status, 0, created.stderr);
+  const r = spawnSync(process.execPath, [cli, 'validate', pipe], {
+    cwd: root, encoding: 'utf8', timeout: 3000
+  });
+  assert.ifError(r.error);
+  assert.equal(r.status, 2);
+  assert.equal(r.stdout, '');
+  assert.equal(JSON.parse(r.stderr).code, 'READ');
+});
