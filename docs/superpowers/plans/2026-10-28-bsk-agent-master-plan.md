@@ -449,6 +449,26 @@ Cada cambio incluye:
 - Kubernetes quota: https://kubernetes.io/docs/tasks/administer-cluster/manage-resources/quota-memory-cpu-namespace/
 - GitHub deploy controls: https://docs.github.com/en/actions/how-tos/deploy/configure-and-manage-deployments/control-deployments
 
+## 3I. BSK Business Verticals & Solution Accelerators
+
+**Requisito del producto:** BSK debe permitir generar, probar, desplegar y operar verticales empresariales independientes del núcleo. Las cuatro verticales actuales en `examples/` — `crm-lite`, `erp-lite`, `operations-dashboard` y `cms-backed-portal` — sólo contienen README y marcadores `.gitkeep` a la fecha de esta revisión. **No son productos funcionales todavía.**
+
+**Especificación operativa:** [BSK Business Verticals & Solution Accelerators](../specs/bsk-business-verticals.md). La especificación define contratos, MVP de cada vertical, reglas de aislamiento de tenants, pruebas negativas, CI/CD individual, presupuestos de recursos, estados `Lab / Preview / GA` y fases de entrega.
+
+**Límites:** una vertical es un producto de dominio de negocio, no un módulo del kernel, un proxy, un servicio SaaS genérico ni un paquete regulatorio. Dependencias sólo hacia contratos públicos y Golden Paths; el kernel no conoce CRM/ERP/CMS ni necesita esas verticales instaladas. No requerir WordPress, n8n, IA, Kubernetes o un cloud concreto para las cuatro verticales.
+
+**Primera vertical completa: CRM Lite.** Después de PR0, PR1, el Golden Path mínimo de PR6 y la ruta funcional de CI/CD por proyecto, implementar CRM end-to-end: Spring/PostgreSQL + React, permisos y tenant isolation, pruebas API/UI/e2e, migraciones, OpenTelemetry, despliegue Compose y restore; Angular como segundo cliente sobre la misma OpenAPI en PR separado. Las otras verticales se implementan en PR separados cuando sus dependencias estén operativas.
+
+**Backlog subordinado (épicas, dividir en PR pequeños):**
+- `VRT0`: auditoría/catálogo + contrato de definición vertical y ADR (tras PR0).
+- `VRT1`: CRM Lite, entidades y API con tests de aislamiento, migraciones y permisos.
+- `VRT2`: CRM web, CI/CD propio, artefacto inmutable, despliegue y prueba E2E/backup.
+- `VRT3`: CMS-backed Portal, flujo editorial + adaptador WordPress optativo (tras PR10).
+- `VRT4`: Operations Dashboard, indicadores de negocio sintéticos y linaje.
+- `VRT5`: ERP Lite, un flujo completo de inventario/pedido con idempotencia y concurrencia.
+
+**Criterio de aceptación:** los cuatro ejemplos deben aparecer como *documentation-only / Lab* hasta disponer de código y pruebas. Cada vertical debe exhibir un caso de uso real reproducible, CI/CD por proyecto, controles y presupuestos propios y demo con datos sintéticos. No mezclar código de dominio dentro del Control Plane ni ejecutar cambios remotos en esta fase documental.
+
 ## 4. División del trabajo entre agentes de IA
 
 | Agente / rol | Responsabilidad principal | Artefactos típicos | Restricciones |
@@ -457,7 +477,7 @@ Cada cambio incluye:
 | **A1: Core + CLI** | Entidades, proyectos, ambientes, servicios, dominio/rutas, validadores, CLI y contratos | `packages/`, `contracts/`, `bsk`, tests | No tocar VPS ni añadir comandos destructivos sin guardas |
 | **A2: Infra / operaciones** | Multi-proyecto Compose, proxy único, dominios/TLS/DNS, bootstrap, Tailscale y backups | `infra/`, `scripts/`, tests de integración | Nunca tocar hosts reales; pruebas desechables |
 | **A3: Delivery / platform** | CI/CD, Jenkins, GitHub Actions, GitLab, K3s/Helm, OpenTofu, OTel | workflows, charts, IaC, runbooks | No duplicar políticas de build en cada pipeline |
-| **A4: Golden Paths / CMS** | Java, React, Angular, Spring, WordPress, Supabase, n8n, agentes IA | templates, demos, e2e | No hacer obligatorios los servicios opcionales |
+| **A4: Golden Paths / CMS / verticales** | Java, React, Angular, Spring, WordPress, Supabase, n8n, agentes IA; verticales CRM/ERP/operaciones/CMS como productos independientes | templates, vertical demos, e2e, API contracts | No hacer obligatorios los servicios opcionales ni introducir lógica de negocio en kernel |
 | **A5: Seguridad / privacidad** | Modelado jurisdiccional, políticas, DSR, auditoría, filtrado de datos en IA | compliance packs, tests de policy | No declarar conformidad jurídica; revisión humana |
 | **A6: Dashboard / UX** | React, proyectos/ambientes/servicios/dominios, operaciones, RBAC y estado en tiempo real | `apps/web`, UI tests | API primero, no lanzar comandos shell desde UI |
 | **A7: Reviewer independiente** | Calidad, seguridad, licencias, reproducibilidad, pruebas negativas | informe de review | No aprobar su propio código |
@@ -515,6 +535,7 @@ Cada cambio incluye:
 - Aplicación funcional: organizaciones/tenants, usuarios, OIDC, roles, proyectos, persistencia PostgreSQL, Flyway, auditoría y OpenAPI.
 - Dos clientes independientes: React + TypeScript y Angular + TypeScript; tests unitarios, integración y Playwright e2e.
 - **Aceptación:** login, permisos, CRUD y aislamiento de tenant probados; ambas interfaces consumen el mismo contrato API; construcción en contenedores.
+- **Salida hacia verticales:** una vez que el contrato y el CI/CD estén operativos, iniciar `VRT1/VRT2` (CRM Lite) conforme a [la especificación de verticales](../specs/bsk-business-verticals.md). No implementar ERP/CMS/operaciones como parte monolítica de PR6.
 
 ### PR7 — Observabilidad y resiliencia (A3)
 
