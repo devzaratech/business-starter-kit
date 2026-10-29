@@ -1,0 +1,66 @@
+name: ES2 disposable runtime conformance (manual only)
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Owner authorization: type AUTHORIZE_DISPOSABLE_ES2'
+        required: true
+        type: string
+      expected_sha:
+        description: 'Exact reviewed 40-character commit SHA of the selected ref'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: es2-runtime-${{ github.run_id }}-${{ github.run_attempt }}
+  cancel-in-progress: false
+
+jobs:
+  conformance:
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.repository == 'devzaratech/business-starter-kit' &&
+      github.actor == github.repository_owner &&
+      github.triggering_actor == github.repository_owner &&
+      inputs.confirm == 'AUTHORIZE_DISPOSABLE_ES2' &&
+      inputs.expected_sha == github.sha
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact authorized source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install locked test dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run non-destructive driver and harness tests
+        run: npm run compose:test
+
+      - name: Execute only the authorized disposable runtime
+        env:
+          BSK_RUNTIME_CONFIRM: ${{ inputs.confirm }}
+          BSK_EXPECTED_SHA: ${{ inputs.expected_sha }}
+        run: node scripts/compose/runtime/run.mjs
+
+      - name: Upload redacted evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: es2-runtime-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 7
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/bsk-es2-evidence-*/*.json
+            ${{ runner.temp }}/bsk-es2-evidence-*/inventory/inventory.json

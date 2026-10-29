@@ -30,6 +30,14 @@ test('engine drift blocks every attempted inner mutation', () => {
   assert.ok(calls.every(c => !c.includes('rm')));
 });
 
+test('Compose comes from the pinned sandbox image and never the mutable runner plugin', () => {
+  const { session, calls } = setup();
+  session.sandbox = { kind: 'container', id: 'owned-id', labels: { 'dev.bsk.test-run': permit.run } };
+  session.inner(['compose', 'version', '--short']);
+  assert.deepEqual(calls.at(-1), ['--host', 'unix:///var/run/docker.sock', 'container', 'exec', 'owned-id',
+    'docker', '--host', 'unix:///run/bsk/docker.sock', 'compose', 'version', '--short']);
+});
+
 test('cleanup checks actual exact ID and all ownership labels before removing', () => {
   const { session, calls, actual } = setup();
   const record = { kind: 'container', id: 'owned-id', labels: { 'dev.bsk.test-run': permit.run } };

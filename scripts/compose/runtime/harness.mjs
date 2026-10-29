@@ -57,6 +57,7 @@ export class Harness {
       '--env', 'DOCKER_TLS_CERTDIR=', images.dind, 'dockerd', '--host=unix:///run/bsk/docker.sock',
       '--storage-driver=overlay2', `--label=dev.bsk.test-run=${run}`], { timeout: 60000 }).stdout.trim();
     requireThat(idPattern.test(id), 'TARGET'); this.outerContainer = { kind: 'container', id, labels };
+    d.sandbox = this.outerContainer;
     const daemon = d.inspect(this.outerContainer, true);
     requireThat(daemon.HostConfig?.Privileged === true && !daemon.HostConfig?.PortBindings?.['2375/tcp'], 'TARGET');
     const socket = join(this.socketDir, 'docker.sock');
@@ -74,10 +75,12 @@ export class Harness {
     requireThat(networks.every(n => ['bridge', 'host', 'none'].includes(n.Name)), 'TARGET_NOT_EMPTY');
     this.authorization = { context: d.context, endpoint: d.endpoint, engineId: inner.ID, hostRef: 'disposable-host', disposable: true,
       authorizationRef: `github-actions:${run}:${this.permit.actor}:${this.permit.commit}` };
-    this.reader = new DockerReader(this.authorization, args => d.raw(args).stdout);
+    this.reader = new DockerReader(this.authorization, args =>
+      args[0] === '--context' && args[2] === 'compose' ? d.inner(args.slice(2)).stdout : d.raw(args).stdout);
     this.save('authorization', this.authorization);
     return { outerEngineId: info.ID, innerEngineId: inner.ID, context: d.context, cgroup: inner.CgroupVersion,
-      engine: inner.ServerVersion, kernel: inner.KernelVersion, cgroupDriver: inner.CgroupDriver, runner: 'ubuntu-24.04' };
+      engine: inner.ServerVersion, kernel: inner.KernelVersion, cgroupDriver: inner.CgroupDriver, runner: 'ubuntu-24.04',
+      daemonImageId: daemon.Image, daemonImageReference: daemon.Config?.Image, outerEngine: info.ServerVersion };
   }
   addAux(kind, id, role) {
     requireThat(kind === 'volume' || idPattern.test(id), 'OWNERSHIP');
@@ -102,7 +105,11 @@ export class Harness {
     const digest = built.RepoDigests.find(v => /^localhost:5000\/bsk-es2-fixture@sha256:[a-f0-9]{64}$/.test(v));
     requireThat(digest && built.Config?.Labels?.['dev.bsk.test-run'] === run, 'IMAGE');
     this.imageRef = digest;
-    this.save('images', { pinned: images, synthetic: { reference: digest, id: built.Id, platform: images.platform },
+    const bases = [images.python, images.registry].map(ref => {
+      const actual = JSON.parse(d.inner(['image', 'inspect', ref]).stdout)[0];
+      return { reference: ref, id: actual.Id, repoDigests: actual.RepoDigests, os: actual.Os, architecture: actual.Architecture };
+    });
+    this.save('images', { pinned: images, bases, synthetic: { reference: digest, id: built.Id, platform: images.platform },
       sourceHashes: { dockerfile: (await import('node:crypto')).createHash('sha256').update(readFileSync(join(fixtureDir, 'Dockerfile'))).digest('hex'),
         app: (await import('node:crypto')).createHash('sha256').update(readFileSync(join(fixtureDir, 'app.py'))).digest('hex') } });
     return { reference: digest, id: built.Id };
@@ -113,7 +120,10 @@ export class Harness {
     f.requests.forEach((r, i) => { this.store.claim(r, i); });
     this.plans = f.requests.map(buildPlan);
     this.save('requests', f.requests); this.save('host-policy', f.host); this.save('inventory-before', this.store.snapshot());
-    for (const [index, p] of this.plans.entries()) this.save(`compose-${index}`, p.compose);
+    for (const [index, p] of this.plans.entries()) {
+      this.save(`compose-${index}`, p.compose);
+      writeFileSync(join(this.socketDir, `compose-${index}.json`), json(p.compose), { mode: 0o600 });
+    }
     return f;
   }
   recordFor(plan, service) {
@@ -143,7 +153,7 @@ export class Harness {
   async deploy() {
     for (let i = 0; i < this.plans.length; i++) {
       const p = this.plans[i];
-      this.docker.inner(['compose', '-p', p.scope, '-f', join(this.root, `compose-${i}.json`), 'up', '-d', '--pull', 'never', '--wait', '--wait-timeout', '30'], { timeout: 60000 });
+      this.docker.inner(['compose', '-p', p.scope, '-f', `/run/bsk/compose-${i}.json`, 'up', '-d', '--pull', 'never', '--wait', '--wait-timeout', '30'], { timeout: 60000 });
       await this.wait(() => this.python(this.recordFor(p, 'http'), connectProbe(this.ip(p, 'db'), true)));
     }
     const reports = [];
@@ -232,7 +242,7 @@ export class Harness {
       labels: { ...action.requiredLabels, 'com.docker.compose.project': a.scope } });
     this.available(b);
     // Recreate only A from the same generated model to read its retained volume.
-    this.docker.inner(['compose', '-p', a.scope, '-f', join(this.root, 'compose-0.json'), 'up', '-d', '--pull', 'never', '--wait', '--wait-timeout', '30'], { timeout: 60000 });
+    this.docker.inner(['compose', '-p', a.scope, '-f', '/run/bsk/compose-0.json', 'up', '-d', '--pull', 'never', '--wait', '--wait-timeout', '30'], { timeout: 60000 });
     await this.wait(() => this.python(this.recordFor(a, 'http'), connectProbe(this.ip(a, 'db'), true)));
     const after = this.plans.map(p => this.checksum(p)); requireThat(json(after) === json(this.beforeChecksums), 'DATA');
     requireThat(json(this.store.snapshot()) === beforeInventory, 'INVENTORY_CHANGED'); this.save('checksums-after', after);
@@ -263,6 +273,7 @@ export class Harness {
         try { this.docker.removeOwned(record, true); } catch (e) { errors.push({ resource: record.id, code: e.code ?? 'CLEANUP' }); break; }
       }
     }
+    if (this.root) this.save('cleanup', { errors, daemonUnavailableRejection });
     requireThat(!errors.length, 'CLEANUP_INCOMPLETE'); return { status: 'verified-removal', errors, daemonUnavailableRejection };
   }
   async run() {

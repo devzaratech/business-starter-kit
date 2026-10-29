@@ -31,6 +31,10 @@ export class DockerSession {
     requireThat(endpoint === this.endpoint, 'TARGET');
     const info = JSON.parse(this.raw(['--context', this.context, 'info', '--format', '{{json .}}']).stdout);
     assertEngine(info, this.outerId, this.permit.run); requireThat(info.ID === this.innerId, 'TARGET');
+    if (args[0] === 'compose') {
+      requireThat(this.sandbox, 'TARGET'); this.inspect(this.sandbox, true);
+      return this.outer(['container', 'exec', this.sandbox.id, 'docker', '--host', 'unix:///run/bsk/docker.sock', ...args], options);
+    }
     return this.raw(['--context', this.context, ...args], options);
   }
   inspect(record, outer = false) {
