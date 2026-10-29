@@ -1,6 +1,6 @@
 # BSK Business Verticals & Solution Accelerators
 
-**Status:** Proposed implementation specification — **not implemented**  
+**Status:** Proposed implementation specification — **not implemented**. **Business-domain code is blocked until engineering slices ES0–ES6 pass the Engineering Golden Path Baseline (EGPB) in the master plan.**  
 **Scope:** `examples/crm-lite`, `examples/erp-lite`, `examples/operations-dashboard`, `examples/cms-backed-portal`  
 **Source of delivery sequencing:** [BSK Agent Master Plan](../plans/2026-10-28-bsk-agent-master-plan.md)  
 **Baseline:** Main branch inspection, 28 October 2026. Four example folders only contain README and `.gitkeep`. No functional business vertical is verified.
@@ -101,7 +101,7 @@ Do **not** start all four verticals in parallel. Work depends on common platform
 
 **PR sizing:** a VRT item is an epic; split it into small PRs with one reviewable vertical slice each. Avoid creating empty directories or manifest-only PRs presented as completed verticals. After shared contracts stabilize, independent verticals may run in parallel **on separate branches and files** with integration review.
 
-**Current priority:** PR0 of the master roadmap remains the first coding-agent assignment. This specification is a *future work contract*, not permission to skip core foundations.
+**Current priority:** PR0/ES0, followed by engineering slices ES1–ES6 using non-business fixtures. The EGPB must pass before VRT1+ implementation. VRT0 documentation may proceed after PR0, but this specification is not permission to skip platform contracts, delivery or conformance.
 
 ## 5. Maturity and release policy
 
