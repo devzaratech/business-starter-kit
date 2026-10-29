@@ -1,5 +1,10 @@
 # ES0 verification evidence
 
+## Historical local evidence
+
+This section preserves the original local run evidence and limitations. Later
+hosted evidence is recorded separately below; it does not rewrite these outcomes.
+
 Run date: 2026-10-29 (project date); audited commit
 `54983f3650328187e92b257261b81a0400c151ab`. Local Windows PowerShell environment:
 Node `v24.22.1`, npm `11.19.1`, Docker Compose `v5.5.1`. CI targets Node 20 and
@@ -54,7 +59,7 @@ advisories have different exposure from the served static web bundle. Review
 actual versions, call paths and remediation in a separate dependency PR; npm's
 suggested Vite remediation includes a major update and is not applied here.
 
-## Not executed / not established
+## Historical local checks not executed / not established
 
 - Hosted GitHub Actions and Jenkins were not triggered; no green hosted CI claim.
 - Maven/Spring tests are blocked locally; Java 17/Node 20 CI parity is unverified.
@@ -85,3 +90,47 @@ that clarification and reported no dependency or contract contradiction.
 PR0's output is evidence and proposed architecture. Owner approval, complete
 required CI, dependency remediation and future runtime conformance remain gates
 for their corresponding claims. Documentation rollback requires no data changes.
+
+## Hosted GitHub Actions evidence for published PR #7
+
+Verified on 2026-10-29 through GitHub's workflow-run and job/step APIs for
+[PR #7](https://github.com/devzaratech/business-starter-kit/pull/7), branch
+`docs/bsk-agent-pr0-architecture`, head commit
+`b8d2dfe586f17ceaa201b6f79aae4b044efb38f8`.
+[CI run #31 / 40813369297](https://github.com/devzaratech/business-starter-kit/actions/runs/40813369297)
+completed with conclusion **success**.
+
+| Hosted job | Observed result | Scope from the workflow and returned steps |
+|---|---|---|
+| [Architecture guardrails (ubuntu-latest)](https://github.com/devzaratech/business-starter-kit/actions/runs/40813369297/job/123248664508) | Success | Node 20 locked install, architecture tests and manifest validation |
+| [Architecture guardrails (windows-latest)](https://github.com/devzaratech/business-starter-kit/actions/runs/40813369297/job/123248664451) | Success | Same architecture commands on Windows / Node 20 |
+| [Spring Boot API tests](https://github.com/devzaratech/business-starter-kit/actions/runs/40813369297/job/123248664594) | Success | Java 17 setup and Maven unit-test step succeeded |
+| [Node, worker and web tests](https://github.com/devzaratech/business-starter-kit/actions/runs/40813369297/job/123248664522) | Success | Node 20 workspace tests and artifact build succeeded |
+| [Docker Compose validation](https://github.com/devzaratech/business-starter-kit/actions/runs/40813369297/job/123248664295) | Success | Infrastructure environment/safety test step succeeded; not deployed runtime isolation |
+| [Quality gate](https://github.com/devzaratech/business-starter-kit/actions/runs/40813369297/job/123248886358) | Success | Required workflow dependencies completed successfully |
+| [SonarQube analysis (optional)](https://github.com/devzaratech/business-starter-kit/actions/runs/40813369297/job/123248781898) | Job success; analysis step **skipped** | Configuration check succeeded; no Sonar analysis or server quality-gate claim |
+
+This establishes hosted baseline Java 17/Node 20 job success for that revision,
+separately from the historically blocked local Maven run. API step summaries
+were inspected; test counts were not inferred from local counts or fresh log
+parsing. Jenkins, dependency remediation, certificate/ingress conformance and
+production deployment protections remain unverified. The 11 npm vulnerability
+entries and deployment/security findings in the inventory are preserved; a green
+CI workflow does not resolve them. This run predates the final documentation
+review commit and must not be represented as that later commit's CI result.
+
+## Final architecture documentation validation
+
+The final PR #7 review changes five Markdown documents only. `git diff --check`
+passed; local-target validation checked 19 relative file links across those five
+documents with no missing targets. Whitespace/final-newline checks passed.
+Baseline comparison (normalizing Windows line endings) confirmed the complete
+implementation/security inventory, threat model, PR1 proposal and npm lockfile
+remain unchanged. The resulting diff was reviewed for English documentation,
+minimum certificate contracts, ES3-only implementation boundaries and unchanged
+security findings. No runtime tests, Certbot commands, DNS challenges or production
+operations were run for this documentation-only follow-up.
+
+A separate read-only review of this five-file follow-up found no actionable
+issues and confirmed the unchanged PR1 scope and security findings. No tests were
+rerun by that reviewer; new-head hosted CI remains a separate check after push.

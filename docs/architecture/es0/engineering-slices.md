@@ -51,6 +51,13 @@ the local EGPB. This avoids a PR6/PR7 numbering dependency inversion.
 
 ## Conformance harness and implementation rules
 
+ES3 also owns [ADR 0008's certificate lifecycle acceptance](../decisions/0008-shared-gateway-and-route-ownership.md):
+separate ingress activation from certificate issuance/renewal, test challenge
+ownership/cleanup, renewal success/no-op/failure, expiry, secret protection and
+bad-certificate/reload rollback using local fixtures. Caddy is the first ingress
+target; optional Nginx/Certbot and future optional Traefik require separate
+adapter evidence. No certificate implementation or schema is added to PR1.
+
 PR1 can use existing Node test runner and locked Ajv; no runtime provider is
 required. ES2+ needs a dedicated opt-in disposable-host job, clearly separated
 from current config-only CI. Pin a supported Linux Engine/Compose/cgroup matrix

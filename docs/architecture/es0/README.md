@@ -5,6 +5,11 @@ Audited commit: `54983f3650328187e92b257261b81a0400c151ab` on
 `docs/bsk-agent-pr0-architecture`. The working tree was clean at audit start.
 The master plan's older baseline is not used as evidence for this review.
 
+Published review: [PR #7](https://github.com/devzaratech/business-starter-kit/pull/7)
+on `docs/bsk-agent-pr0-architecture`; open and unmerged at this review. Hosted
+GitHub Actions evidence is recorded separately from the historical local runs
+in [verification evidence](test-results.md).
+
 This package establishes the architectural baseline for a reusable Golden Path.
 It does not establish production readiness or pass the Engineering Golden Path
 Baseline (EGPB). The [master plan](../../superpowers/plans/2026-10-28-bsk-agent-master-plan.md)
@@ -23,7 +28,7 @@ ADRs 0006–0010 are proposals pending review.
 | [Verification evidence](test-results.md) | Actual commands, outcomes and unverified areas |
 | [ADR 0006](../decisions/0006-canonical-resources-and-operations.md) | Resource identities, state separation and control plane |
 | [ADR 0007](../decisions/0007-compose-isolation-and-governance.md) | Compose ownership, network isolation and resource admission |
-| [ADR 0008](../decisions/0008-shared-gateway-and-route-ownership.md) | One edge, route transactions and adapter selection |
+| [ADR 0008](../decisions/0008-shared-gateway-and-route-ownership.md) | One edge, IngressDriver/CertificateProvider boundaries and optional Nginx/Certbot lifecycle in ES3 |
 | [ADR 0009](../decisions/0009-project-delivery-and-recovery.md) | Project-scoped delivery, telemetry and recovery |
 | [ADR 0010](../decisions/0010-optional-private-administration.md) | Optional Tailscale and private administration |
 
@@ -36,11 +41,13 @@ No dependencies were added; the locked npm tree was installed for verification.
 
 Review must confirm the proposed identity, scope, route and resource semantics
 before PR1 translates the declaration subset into JSON Schema 2020-12. Proposed
-ADRs do not authorize changing legacy behavior. No PR has been published because
-the owner explicitly withheld push authorization. This package and its PR-ready
-description below provide the local review handoff. Independent review found no
-critical/high/medium issues; the result and limits are in the test record. Owner
-acceptance and hosted required CI remain gates.
+ADRs do not authorize changing legacy behavior. PR #7 is published; this
+documentation review updates its existing branch without merging. Independent
+baseline review found no critical/high/medium
+issues; the result and limits are in the test record. Hosted CI succeeded for the
+recorded published revision; each new head needs its own checks. Owner acceptance
+and future runtime conformance remain gates. Existing npm vulnerabilities and
+deployment/security findings remain unresolved.
 
 ## Suggested pull request description
 

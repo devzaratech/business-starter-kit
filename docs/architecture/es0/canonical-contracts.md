@@ -70,6 +70,11 @@ proof of a live machine. Future Host responses distinguish declared capacity,
 reserved capacity, allocation ledger, measurement time and observed availability.
 PR1 does not discover hosts or require a database, gateway or SecretRef backend.
 
+ES3's minimum certificate lifecycle and separate `IngressDriver` and
+`CertificateProvider` responsibilities are defined in [ADR 0008](../decisions/0008-shared-gateway-and-route-ownership.md).
+They do not extend PR1's declaration subset or require a specific proxy, ACME
+client, CA or DNS provider in the kernel.
+
 ## Declarative example (proposed wire form)
 
 ```json
