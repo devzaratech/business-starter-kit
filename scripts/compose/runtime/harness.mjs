@@ -5,6 +5,7 @@ import { setTimeout as delay } from 'node:timers/promises';
 import { buildPlan } from '../lib/plan.mjs';
 import { Inventory } from '../lib/inventory.mjs';
 import { DockerReader } from '../lib/docker.mjs';
+import { verifyShutdown } from './shutdown.mjs';
 import { expectedObjects, inspectLimits, planLifecycle } from '../lib/lifecycle.mjs';
 import { requireThat, assertEngine, resultStatus } from './guard.mjs';
 import { DockerSession } from './session.mjs';
@@ -251,7 +252,7 @@ export class Harness {
     requireThat(json(this.store.snapshot()) === beforeInventory, 'INVENTORY_CHANGED'); this.save('checksums-after', after);
     return { projectBAfterStopAndDown: 'available', before: this.beforeChecksums, after, inventoryUnchanged: true };
   }
-  cleanup() {
+  async cleanup() {
     const errors = [];
     // Cleanup never invokes Compose down, force removal, wildcard deletion or prune.
     for (const p of this.plans) for (const expected of expectedObjects(p)) {
@@ -265,19 +266,23 @@ export class Harness {
     for (const record of this.aux.reverse()) { try { this.docker.removeOwned(record); } catch (e) { errors.push({ resource: record.id, code: e.code ?? 'CLEANUP' }); } }
     // A failure leaves the sandbox for the ephemeral runner's disposal; do not bypass ownership failures.
     let daemonUnavailableRejection = null;
+    const shutdownEvidence = [];
+    try {
     if (!errors.length && this.reader && this.outerContainer && this.plans.length > 0) {
       this.docker.inspect(this.outerContainer, true);
       this.docker.outer(['container', 'stop', '--time', '5', this.outerContainer.id]);
-      try { this.reader.resources(this.plans[0]); } catch (e) { daemonUnavailableRejection = e.code; }
-      requireThat(daemonUnavailableRejection === 'DOCKER_READ', 'DAEMON_NEGATIVE');
+      daemonUnavailableRejection = await verifyShutdown(this.docker, this.outerContainer, this.authorization,
+        shutdownEvidence, this.shutdownRead);
     }
     if (!errors.length) {
       for (const record of [this.outerContainer, this.outerVolume].filter(Boolean)) {
         try { this.docker.removeOwned(record, true); } catch (e) { errors.push({ resource: record.id, code: e.code ?? 'CLEANUP' }); break; }
       }
     }
-    if (this.root) this.save('cleanup', { errors, daemonUnavailableRejection });
-    requireThat(!errors.length, 'CLEANUP_INCOMPLETE'); return { status: 'verified-removal', errors, daemonUnavailableRejection };
+    requireThat(!errors.length, 'CLEANUP_INCOMPLETE'); return { status: 'verified-removal', errors, daemonUnavailableRejection, shutdownEvidence };
+    } finally {
+      if (this.root) this.save('cleanup', { errors, daemonUnavailableRejection, shutdownEvidence });
+    }
   }
   async run() {
     requireThat(lstatSync(this.permit.temp).isDirectory() && !lstatSync(this.permit.temp).isSymbolicLink(), 'TEMP');

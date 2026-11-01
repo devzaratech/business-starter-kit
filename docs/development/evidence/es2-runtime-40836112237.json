@@ -1,0 +1,126 @@
+{
+  "runId": 40836112237,
+  "artifactId": 12880871459,
+  "commit": "3a314eb78e31be99920a734850335e2ee4e50c51",
+  "conformance": "failed",
+  "checks": [
+    {
+      "name": "bootstrap",
+      "status": "passed",
+      "code": null
+    },
+    {
+      "name": "immutable-synthetic-image",
+      "status": "passed",
+      "code": null
+    },
+    {
+      "name": "atomic-inventory",
+      "status": "passed",
+      "code": null
+    },
+    {
+      "name": "admission-negatives",
+      "status": "passed",
+      "code": null
+    },
+    {
+      "name": "ownership-topology-and-cgroup-limits",
+      "status": "passed",
+      "code": null
+    },
+    {
+      "name": "version-evidence",
+      "status": "passed",
+      "code": null
+    },
+    {
+      "name": "private-network-denials",
+      "status": "passed",
+      "code": null
+    },
+    {
+      "name": "bounded-load-enforcement",
+      "status": "passed",
+      "code": null
+    },
+    {
+      "name": "ownership-and-daemon-rejections",
+      "status": "passed",
+      "code": null
+    },
+    {
+      "name": "stop-down-project-and-data-isolation",
+      "status": "passed",
+      "code": null
+    },
+    {
+      "name": "verified-cleanup",
+      "status": "failed",
+      "code": "DAEMON_NEGATIVE"
+    }
+  ],
+  "versions": {
+    "engine": "28.5.2",
+    "compose": "2.40.3",
+    "kernel": "7.0.0-1017-azure",
+    "cgroup": "2",
+    "python": "3.13.18 (main, Oct 26 2026, 22:42:25) [GCC 15.2.0]"
+  },
+  "checksumsBefore": [
+    "e5009ce6d5bbc5b52fc04c900ce81cea404a95163e47c84194137e9765152262",
+    "69a6b68998681bd77254fa26aec8280d4e0342981ecdb5d61d218fab94dc1acb"
+  ],
+  "checksumsAfter": [
+    "e5009ce6d5bbc5b52fc04c900ce81cea404a95163e47c84194137e9765152262",
+    "69a6b68998681bd77254fa26aec8280d4e0342981ecdb5d61d218fab94dc1acb"
+  ],
+  "commandTail": [
+    {
+      "argv": [
+        "docker",
+        "--host",
+        "unix:///var/run/docker.sock",
+        "container",
+        "stop",
+        "--time",
+        "5",
+        "b0b577de99aad2ef0a53cce0d0817ce155beac28045bba85378b63990a5fbffb"
+      ],
+      "exit": 0,
+      "error": null,
+      "stdoutSha256": "a1f125f7b4d22e083202d6d07327555cdd358f51d84e80ea1c265a50dd0762b2"
+    },
+    {
+      "argv": [
+        "docker",
+        "context",
+        "inspect",
+        "bsk-es2-40836112237-1",
+        "--format",
+        "{{json .Endpoints.docker.Host}}"
+      ],
+      "exit": 0,
+      "error": null,
+      "stdoutSha256": "510e9802a09206a14aabd42fdeb8d2379a77e004684084c6474d05aa41f3132c"
+    },
+    {
+      "argv": [
+        "docker",
+        "--context",
+        "bsk-es2-40836112237-1",
+        "info",
+        "--format",
+        "{{json .}}"
+      ],
+      "exit": 0,
+      "error": null,
+      "stdoutSha256": "5d3c4b261315107f50dfc8df46ba3611963fa1d6671ca00a739423ccb7bf8fa7"
+    }
+  ],
+  "historicalIntermediateCode": "not recorded; response body not retained",
+  "sourceSha256": {
+    "results": "5e6216d9249b3d4941c03bd7b8346b77e0935057f89743b60da290538e7a5d00",
+    "commands": "9627e99873f4c2f6ef74cec885a8bb41fb7df37c46210942cc2861b1f8d99cd9"
+  }
+}
