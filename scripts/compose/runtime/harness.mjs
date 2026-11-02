@@ -6,6 +6,7 @@ import { buildPlan } from '../lib/plan.mjs';
 import { Inventory } from '../lib/inventory.mjs';
 import { DockerReader } from '../lib/docker.mjs';
 import { verifyShutdown } from './shutdown.mjs';
+import { runLabelDrift, labelDriftGap } from './label-drift.mjs';
 import { expectedObjects, inspectLimits, planLifecycle } from '../lib/lifecycle.mjs';
 import { requireThat, assertEngine, resultStatus } from './guard.mjs';
 import { DockerSession } from './session.mjs';
@@ -22,7 +23,7 @@ export class Harness {
     this.permit = permit; this.docker = session; this.checks = []; this.aux = []; this.plans = [];
     this.gaps = [
       'Secret refs have no backend in the merged driver; positive secret-ref acceptance remains unimplemented.',
-      'Expected-resource label drift at unchanged cardinality has unit coverage only; runtime ownership negatives reject scoped extra volumes.'
+      labelDriftGap
     ];
   }
   save(name, value) { writeFileSync(join(this.root, `${name}.json`), json(value), { mode: 0o600 }); }
@@ -254,6 +255,7 @@ export class Harness {
   }
   async cleanup() {
     const errors = [];
+    if (this.labelDriftPending) errors.push({ code: 'DRIFT_PARTIAL_CREATION' });
     // Cleanup never invokes Compose down, force removal, wildcard deletion or prune.
     for (const p of this.plans) for (const expected of expectedObjects(p)) {
       try {
@@ -306,12 +308,18 @@ export class Harness {
       await this.check('bounded-load-enforcement', () => this.loads());
       await this.check('ownership-and-daemon-rejections', () => this.ownershipNegatives());
       await this.check('stop-down-project-and-data-isolation', () => this.lifecycle());
+      await this.check('expected-resource-label-drift', async () => {
+        const evidence = await runLabelDrift(this);
+        this.save('expected-label-drift', evidence);
+        return evidence;
+      });
     } catch { /* The owning check records a redacted failure. Remaining checks are explicitly blocked below. */ }
     finally {
       await this.check('verified-cleanup', () => this.cleanup()).catch(() => {});
       const required = ['bootstrap', 'immutable-synthetic-image', 'atomic-inventory', 'admission-negatives', 'ownership-topology-and-cgroup-limits',
-        'version-evidence', 'private-network-denials', 'bounded-load-enforcement', 'ownership-and-daemon-rejections', 'stop-down-project-and-data-isolation', 'verified-cleanup'];
+        'version-evidence', 'private-network-denials', 'bounded-load-enforcement', 'ownership-and-daemon-rejections', 'stop-down-project-and-data-isolation', 'expected-resource-label-drift', 'verified-cleanup'];
       for (const name of required) if (!this.checks.some(c => c.name === name)) this.checks.push({ name, status: 'blocked', code: 'PREREQUISITE' });
+      if (this.checks.every(c => c.status === 'passed')) this.gaps = this.gaps.filter(gap => gap !== labelDriftGap);
       this.save('commands', this.docker.commands);
       this.save('results', { commit: this.permit.commit, run: this.permit.run, checks: this.checks, remainingAcceptanceGaps: this.gaps,
         conformance: resultStatus(this.checks, this.gaps), completedAt: new Date().toISOString() });
