@@ -26,6 +26,11 @@ test('overview explicitly dates its snapshot and distinguishes acceptance from l
   assert.match(html, /2026-11-02/); assert.match(html, /snapshot/i); assert.match(html, /not live/i);
   assert.match(html, /ES2/); assert.match(html, /Needs evidence/);
 });
+test('snapshot supporting copy remains inside description-list definitions', () => {
+  const html = renderToStaticMarkup(React.createElement(components().Overview));
+  assert.doesNotMatch(html, /<\/dd><p>/);
+  assert.equal((html.match(/<p>[^<]+<\/p><\/dd>/g) ?? []).length, 3);
+});
 test('every operational screen is empty, disabled and describes prerequisites', () => {
   for (const section of ['projects', 'environments', 'services', 'domains', 'releases', 'observability']) {
     const html = renderToStaticMarkup(React.createElement(components().EmptyState, { section }));

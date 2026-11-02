@@ -81,8 +81,12 @@ are bundled; npm still reports 11 advisories (4 moderate, 6 high, 1 critical).
 
 Actual local verification on 2026-11-02:
 
-- Existing two environment tests and two new real-component SSR regression tests
+- Existing two environment tests and three new real-component SSR regression tests
   passed. The new tests failed for missing extracted components before refactoring.
+  A description-list semantics regression failed before moving supporting copy
+  inside its definition. Independent review found no blocker; its semantic and
+  trailing-whitespace findings were corrected. Workspace tests passed 7/7,
+  architecture tests 104/104, and all 10 module manifests validated.
 - Strict TypeScript and Vite build passed (33 modules). The original draft failed
   strict checking because React declarations were missing; no permissive shims
   or relaxed compiler flags were introduced.

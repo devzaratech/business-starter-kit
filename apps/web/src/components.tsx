@@ -19,9 +19,9 @@ export function Overview() {
       <div className="section-header"><h2 id="snapshot-title">Engineering snapshot</h2>
         <p>As of <time dateTime="2026-11-02">2026-11-02</time> · Maintained manually, not live GitHub or CI data.</p></div>
       <dl className="metric-grid">
-        <div className="metric"><dt>Foundation</dt><dd>Offline planning</dd><p>ES0 and ES1 are merged.</p></div>
-        <div className="metric"><dt>ES2 acceptance</dt><dd>Incomplete</dd><p>Runtime evidence and remaining gaps require review.</p></div>
-        <div className="metric"><dt>Control Plane API</dt><dd>Not connected</dd><p>Authentication and scoped policy checks come first.</p></div>
+        <div className="metric"><dt>Foundation</dt><dd><span className="metric-value">Offline planning</span><p>ES0 and ES1 are merged.</p></dd></div>
+        <div className="metric"><dt>ES2 acceptance</dt><dd><span className="metric-value">Incomplete</span><p>Runtime evidence and remaining gaps require review.</p></dd></div>
+        <div className="metric"><dt>Control Plane API</dt><dd><span className="metric-value">Not connected</span><p>Authentication and scoped policy checks come first.</p></dd></div>
       </dl>
       <p className="disclaimer">Code merged does not mean acceptance complete. Verify current commits, checks and runtime artifacts before making operational decisions.</p>
       <div className="slice-grid">

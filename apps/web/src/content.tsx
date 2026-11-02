@@ -47,4 +47,3 @@ export const emptyStates: Record<Exclude<Section, 'overview'>, { description: st
     requirements: ['Real telemetry and correlation', 'Redacted operational audit', 'Recovery evidence'],
   },
 };
-
