@@ -1,5 +1,9 @@
 # ES2 disposable runtime conformance harness
 
+Update 2026-11-01: the first authorized execution passed ten runtime checks but
+failed final shutdown verification. See the [investigation and targeted fix](es2-daemon-shutdown-investigation.md).
+The preparation status below is historical; ES2 remains incomplete.
+
 Status: **prepared, not executed; ES2 runtime conformance remains unproven**.
 PR #9 is merged as `5da56dea6b650ecd866224a393008a172e5dcb8d`. This follow-up
 adds tests and an opt-in harness around that driver; it does not add a deployment
