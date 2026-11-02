@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { navigation, type Section } from './content';
 import { EmptyState, Overview } from './components';
 
@@ -11,6 +11,7 @@ export function App() {
   const toggle = useRef<HTMLButtonElement>(null);
   const sidebar = useRef<HTMLElement>(null);
   const main = useRef<HTMLElement>(null);
+  const resizeFocus = useRef<'toggle' | 'current' | null>(null);
   const current = navigation.find(item => item.id === section)!;
 
   useEffect(() => {
@@ -18,15 +19,18 @@ export function App() {
     function resize() {
       const focusInside = sidebar.current?.contains(document.activeElement);
       const focusOnToggle = document.activeElement === toggle.current;
+      resizeFocus.current = media.matches && focusInside ? 'toggle' : !media.matches && focusOnToggle ? 'current' : null;
       setMobile(media.matches); setMenuOpen(false);
-      requestAnimationFrame(() => {
-        if (media.matches && focusInside) toggle.current?.focus();
-        if (!media.matches && focusOnToggle) sidebar.current?.querySelector<HTMLButtonElement>('[aria-current]')?.focus();
-      });
     }
     media.addEventListener('change', resize);
     return () => media.removeEventListener('change', resize);
   }, []);
+
+  useLayoutEffect(() => {
+    if (resizeFocus.current === 'toggle') toggle.current?.focus();
+    if (resizeFocus.current === 'current') sidebar.current?.querySelector<HTMLButtonElement>('[aria-current]')?.focus();
+    resizeFocus.current = null;
+  }, [mobile]);
 
   useEffect(() => {
     if (mobile && menuOpen) sidebar.current?.querySelector<HTMLButtonElement>('[aria-current]')?.focus();
@@ -43,7 +47,7 @@ export function App() {
   return <div className="bsk-shell">
     <a className="skip-link" href="#main-content">Skip to content</a>
     <header className="topbar">
-      <button ref={toggle} type="button" className="menu-toggle" aria-label={menuOpen ? 'Close navigation' : 'Open navigation'}
+      <button ref={toggle} type="button" className="menu-toggle" hidden={!mobile} aria-label={menuOpen ? 'Close navigation' : 'Open navigation'}
         aria-expanded={mobile && menuOpen} aria-controls="primary-sidebar" onClick={() => setMenuOpen(open => !open)}
         onKeyDown={event => { if (event.key === 'Escape' && menuOpen) { event.preventDefault(); closeMenu(); } }}>☰</button>
       <p className="breadcrumb">BSK <span aria-hidden="true">/</span> {current.title}</p>

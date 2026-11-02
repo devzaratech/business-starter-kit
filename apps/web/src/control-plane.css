@@ -187,7 +187,7 @@ button:focus-visible, a:focus-visible, [tabindex="-1"]:focus-visible {
   font-size: 11px;
 }
 .menu-toggle {
-  display: none;
+  display: block;
   min-width: 44px;
   min-height: 44px;
   border: 1px solid var(--border);

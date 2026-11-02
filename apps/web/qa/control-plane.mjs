@@ -49,11 +49,13 @@ try {
   // Breakpoint focus must not remain on an element that becomes hidden.
   await page.setViewportSize({ width: 390, height: 900 });
   const toggle = page.getByRole('button', { name: 'Open navigation', exact: true });
-  await toggle.focus();
-  await page.setViewportSize({ width: 1000, height: 900 });
-  await page.waitForFunction(() => document.activeElement?.getAttribute('aria-current') === 'page');
-  await page.setViewportSize({ width: 390, height: 900 });
-  await page.waitForFunction(() => document.activeElement?.getAttribute('aria-controls') === 'primary-sidebar');
+  for (let i = 0; i < 5; i++) {
+    await toggle.focus();
+    await page.setViewportSize({ width: 1000, height: 900 });
+    await page.waitForFunction(() => document.activeElement?.getAttribute('aria-current') === 'page');
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.waitForFunction(() => document.activeElement?.getAttribute('aria-controls') === 'primary-sidebar');
+  }
   assert.equal(await toggle.evaluate(el => getComputedStyle(el).outlineStyle), 'solid');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   assert.equal(await page.locator('body').evaluate(el => getComputedStyle(el).scrollBehavior), 'auto');

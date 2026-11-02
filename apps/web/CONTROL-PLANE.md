@@ -96,6 +96,11 @@ Actual local verification on 2026-11-02:
   Enter/Space, Escape, toggle closing, selection and breakpoint focus, disabled
   controls, reduced-motion style and no page exceptions. Screenshots at those
   widths were captured; desktop and mobile renderings were visually inspected.
+  A repeated browser run exposed a breakpoint focus timeout before correction:
+  CSS could hide the toggle before React moved focus. Visibility now uses native
+  React-controlled `hidden`, and focus transfers in a layout effect after the
+  DOM update. The same browser regression passed after the fix, including five
+  mobile/desktop round trips.
 - 65 sampled rendered text/background pairs passed a 4.5:1 contrast check;
   the minimum sampled ratio was 4.91:1. This is not a complete accessibility audit.
 - Initial Chrome-channel launch was unavailable; the installed Edge channel was
