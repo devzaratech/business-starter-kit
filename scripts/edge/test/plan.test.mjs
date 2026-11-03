@@ -40,6 +40,45 @@ test('segment boundaries, longest prefix and explicit strip semantics', () => {
   b.routes[2].spec.stripPrefix = false;
   assert.equal(matchRoute(planCandidate(snapshot(b), 'edge'), 'one.alpha.test', '/api/x').forwardPath, '/api/x');
 });
+
+for (const stripPrefix of [false, true]) test(`adversarial binding names preserve ordered longest-prefix semantics (strip=${stripPrefix})`, () => {
+  const b = fixture(); b.routes[0].metadata.name = 'a-root'; b.routes[2].metadata.name = 'z-api';
+  b.routes[2].spec.stripPrefix = stripPrefix;
+  const deep = structuredClone(b.routes[2]); deep.metadata.name = 'zz-api-v2'; deep.spec.pathPrefix = '/api/v2'; b.routes.push(deep);
+  const p = planCandidate(snapshot(b), 'edge');
+  assert.deepEqual(p.desired.routes.filter(r => r.hostname === 'one.alpha.test').map(r => r.pathPrefix), ['/api/v2', '/api', '/']);
+  assert.equal(JSON.stringify(p), JSON.stringify(planCandidate(snapshot(reverse(b)), 'edge')));
+  for (const [path, prefix, stripped] of [['/api/v2/users', '/api/v2', '/users'], ['/api/v2', '/api/v2', '/'],
+    ['/api/users', '/api', '/users'], ['/api', '/api', '/'], ['/api/v2x', '/api', '/v2x'],
+    ['/apix', '/', '/apix'], ['/fallback', '/', '/fallback'], ['/', '/', '/']]) {
+    const result = matchRoute(p, 'one.alpha.test', path);
+    assert.equal(result.route.pathPrefix, prefix);
+    assert.equal(result.forwardPath, stripPrefix ? stripped : path);
+  }
+});
+
+test('reference matching chooses the longest prefix even if a route array is reordered', () => {
+  const b = fixture(); b.routes[0].metadata.name = 'a-root'; b.routes[2].metadata.name = 'z-api';
+  const p = planCandidate(snapshot(b), 'edge'); p.desired.routes.reverse();
+  const before = JSON.stringify(p);
+  assert.equal(matchRoute(p, 'one.alpha.test', '/api/users').route.pathPrefix, '/api');
+  assert.equal(matchRoute(p, 'one.alpha.test', '/api/users').forwardPath, '/users');
+  assert.equal(JSON.stringify(p), before);
+});
+
+test('binding references are unambiguous across projects and arbitrary environments', () => {
+  const b = fixture();
+  const environment = structuredClone(b.declarations.resources.find(r => r.kind === 'Environment' && r.metadata.projectRef === 'alpha'));
+  environment.metadata.name = 'preview-next'; b.declarations.resources.push(environment);
+  const deployment = structuredClone(b.deployments[0]); deployment.resource.metadata.environmentRef = 'preview-next'; b.deployments.push(deployment);
+  b.zones[0].owners.push({ projectRef: 'alpha', environmentRef: 'preview-next' });
+  const route = structuredClone(b.routes[0]); route.metadata.environmentRef = 'preview-next'; route.spec.hostname = 'next.alpha.test'; b.routes.push(route);
+  const refs = planCandidate(snapshot(b), 'edge').desired.routes.filter(r => r.bindingRef?.name === 'one-root').map(r => r.bindingRef);
+  assert.equal(refs.length, 4);
+  assert.equal(new Set(refs.map(r => JSON.stringify(r))).size, 4);
+  assert.deepEqual(refs.find(r => r.environmentRef === 'preview-next'), { installationRef: 'fixture-install', kind: 'DomainBinding',
+    projectRef: 'alpha', environmentRef: 'preview-next', name: 'one-root' });
+});
 test('unknown gateway and forged snapshot state reject before planning', () => {
   denies(() => planCandidate(snapshot(fixture()), 'foreign'), 'UNRESOLVED_REFERENCE');
   denies(() => planCandidate({ ...snapshot(fixture()), generation: -1 }, 'edge'), 'CORRUPT_REGISTRY');

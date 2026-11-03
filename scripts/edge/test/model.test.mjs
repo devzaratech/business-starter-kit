@@ -66,3 +66,14 @@ test('hostname exclusivity is installation-wide across distinct gateway hosts', 
   b.routes[3].spec.hostname = b.routes[0].spec.hostname; b.routes[3].spec.pathPrefix = '/nested';
   denies(() => validateInput(b), 'HOSTNAME_OWNERSHIP');
 });
+
+for (const moveRoot of [false, true]) test(`rejects same-owner hostname fragmented across gateways (move root=${moveRoot})`, () => {
+  const b = fixture(); b.hosts.push({ name: 'host-b', installationRef: b.installationRef });
+  const gateway = structuredClone(b.gateways[0]); gateway.metadata.name = 'edge-b'; gateway.spec.hostRef = 'host-b'; b.gateways.push(gateway);
+  const deployment = structuredClone(b.deployments[0]); deployment.resource.metadata.name = 'release-2'; deployment.resource.spec.hostRef = 'host-b'; b.deployments.push(deployment);
+  const moved = b.routes[moveRoot ? 0 : 2]; moved.spec.gatewayRef = 'edge-b'; moved.spec.deploymentRef = 'release-2';
+  denies(() => validateInput(b), 'HOST_GATEWAY');
+  // Moving every binding of the hostname coherently remains valid.
+  b.routes.filter(r => r.spec.hostname === moved.spec.hostname).forEach(r => { r.spec.gatewayRef = 'edge-b'; r.spec.deploymentRef = 'release-2'; });
+  assert.equal(validateInput(b).gateways.length, 2);
+});

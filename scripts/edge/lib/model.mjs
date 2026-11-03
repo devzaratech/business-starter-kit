@@ -79,6 +79,7 @@ export function validateInput(input) {
     requireRef(hosts.find(h => h.name === d.spec.hostRef));
   }
   const visibilities = new Map();
+  const hostnameGateways = new Map();
   for (const r of routes) {
     const { metadata: m, spec: s } = r;
     const g = requireRef(gateways.find(g => g.metadata.name === s.gatewayRef));
@@ -86,6 +87,8 @@ export function validateInput(input) {
     const d = requireRef(deployments.find(d => d.resource.metadata.name === s.deploymentRef && owner(d.resource.metadata) === owner(m)));
     if (d.resource.spec.serviceRef !== s.serviceRef) fail('UNRESOLVED_REFERENCE');
     if (d.resource.spec.hostRef !== g.spec.hostRef) fail('HOST_PLACEMENT');
+    if (hostnameGateways.has(s.hostname) && hostnameGateways.get(s.hostname) !== s.gatewayRef) fail('HOST_GATEWAY');
+    hostnameGateways.set(s.hostname, s.gatewayRef);
     if (!z.owners.some(o => owner(o) === owner(m)) || !(s.hostname === z.hostname || s.hostname.endsWith(`.${z.hostname}`))) fail('ZONE_OWNERSHIP');
     if (s.visibility === 'public' && (z.visibility !== 'public' || d.visibility !== 'public')) fail('PRIVATE_EXPOSURE');
     if (visibilities.has(s.hostname) && visibilities.get(s.hostname) !== s.visibility) fail('HOST_VISIBILITY');

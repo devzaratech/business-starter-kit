@@ -12,7 +12,7 @@ export interface IngressCandidate {
   observed: null;
 }
 export interface PublicRoute {
-  bindingRef: string;
+  bindingRef: { installationRef: string; kind: 'DomainBinding'; projectRef: string; environmentRef: string; name: string };
   hostname: string;
   pathPrefix: string;
   stripPrefix: boolean;

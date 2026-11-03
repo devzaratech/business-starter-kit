@@ -82,6 +82,26 @@ test('same-owner rebinding is an explicit authorized atomic transaction', t => {
   assert.equal(result.input.routes.find(r => r.metadata.name === selected[0].metadata.name && r.metadata.projectRef === 'alpha').spec.stripPrefix, true);
 });
 
+test('split-gateway claims leave committed bytes untouched; whole-hostname authorized moves remain atomic', t => {
+  const input = fixture(); input.hosts.push({ name: 'host-b', installationRef: input.installationRef });
+  const gateway = structuredClone(input.gateways[0]); gateway.metadata.name = 'edge-b'; gateway.spec.hostRef = 'host-b'; input.gateways.push(gateway);
+  const deployment = structuredClone(input.deployments[0]); deployment.resource.metadata.name = 'release-2'; deployment.resource.spec.hostRef = 'host-b'; input.deployments.push(deployment);
+  const { root, store, routes } = setup(t, () => true, input); store.transact(claim(routes), 0);
+  const before = fs.readFileSync(join(root, 'registry.json'));
+  const extra = structuredClone(routes[0]); extra.metadata.name = 'fragment'; extra.spec.pathPrefix = '/fragment';
+  extra.spec.gatewayRef = 'edge-b'; extra.spec.deploymentRef = 'release-2';
+  denies(() => store.transact(claim([extra]), 1), 'HOST_GATEWAY');
+  assert.deepEqual(fs.readFileSync(join(root, 'registry.json')), before);
+  assert.equal(store.snapshot().generation, 1);
+  const moved = routes.filter(r => r.spec.hostname === extra.spec.hostname).map(r => structuredClone(r));
+  moved.forEach(r => { r.spec.gatewayRef = 'edge-b'; r.spec.deploymentRef = 'release-2'; });
+  const scope = { projectRef: 'alpha', environmentRef: 'review-42' };
+  const result = store.transact({ action: 'rebind', hostname: extra.spec.hostname, from: scope, to: scope, routes: moved }, 1);
+  assert.equal(result.generation, 2); assert.equal(result.input.routes.length, routes.length);
+  assert.ok(result.input.routes.filter(r => r.spec.hostname === extra.spec.hostname).every(r => r.spec.gatewayRef === 'edge-b'));
+  assert.ok(result.input.routes.filter(r => r.spec.hostname !== extra.spec.hostname).every(r => r.spec.gatewayRef === 'edge'));
+});
+
 test('initialization accepts only an empty route set and never bypasses claim authorization', t => {
   const parent = fs.mkdtempSync(join(tmpdir(), 'bsk-edge-init-')); const root = join(parent, 'new');
   t.after(() => fs.rmSync(parent, { recursive: true, force: true }));

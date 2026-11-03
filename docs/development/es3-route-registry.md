@@ -64,6 +64,9 @@ Independent directories and hosts do not coordinate; distributed mutation is
 unsupported. Route exclusivity is `(installationRef, hostname, pathPrefix)`,
 independent of gateway and visibility. Same-owner nested paths are allowed;
 duplicate exact claims and cross-owner hostname or nested capture are rejected.
+All bindings of a hostname must also reference exactly one gateway, including
+same-owner root and nested paths. `HOST_GATEWAY` rejects fragmented routing
+across gateways/hosts; multiple gateways remain valid for distinct hostnames.
 Private and public claims cannot share a hostname in this first adapter. This
 conservative restriction prevents a public `/` from capturing a private child
 path without encoding private paths into public candidates.
@@ -136,6 +139,9 @@ manual filesystem changes while writers run.
 Private bindings, hostnames and catalogs are omitted. Public routes contain
 logical installation/project/environment/service/deployment/host references and
 the declared HTTP service port, never caller-supplied endpoints. `ports.d.ts`
+defines each `bindingRef` as `{installationRef, kind: "DomainBinding",
+projectRef, environmentRef, name}`, identifying bindings unambiguously across
+projects/environments without granting privileges. `ports.d.ts` also
 defines the typed candidate and future `IngressDriver` methods; no adapter is
 implemented. Caddy remains the first future ingress target; Nginx and Traefik
 enum values do not imply supported adapters.
@@ -143,6 +149,8 @@ enum values do not imply supported adapters.
 Candidates have `mode: "dry-run"`, desired routes, registry generation,
 `applied: null` and `observed: null`. Canonical object keys and set ordering,
 hostname ordering and decreasing path-prefix length produce stable bytes.
+Candidate canonicalization explicitly preserves array order while sorting object
+keys; it must not apply set sorting to the precedence-ordered route array.
 `planId` is SHA-256 of the UTF-8 JSON candidate body before adding `planId`;
 no clock, randomness or filesystem path enters the identity. A changed registry
 generation changes identity, including changes that do not affect public routes.
@@ -150,7 +158,8 @@ Neither this digest nor a snapshot is execution authorization.
 
 `matchRoute(candidate, hostname, path)` is a reference matcher for generated
 candidates. It uses exact-or-segment-prefix matching (`/api` does not match
-`/apix`), longest prefix first and explicit stripping; stripping an exact prefix
+`/apix`), selects the longest matching prefix independently of array order, and
+uses explicit stripping; stripping an exact prefix
 produces `/`. Host/path inputs use the canonical restricted syntax. Parsing
 HTTP URLs, query preservation, forwarded-header policy and live proxy semantics
 must be implemented and tested in ES3-B.
@@ -200,7 +209,7 @@ network/listener creation and subprocess execution during candidate planning.
 The ordinary architecture CI matrix runs `edge:test` on Linux and Windows;
 local and hosted results must be reported separately.
 
-Local verification on Windows / Node.js 24.22.1:
+Initial local verification on Windows / Node.js 24.22.1:
 
 | Check | Observed result |
 |---|---|
@@ -230,6 +239,36 @@ SonarQube's optional scan was configuration-skipped. The run remains failed.
 The new edge step is now placed before Compose, with an ordering regression,
 so its Windows evidence is independent of this Docker-client render failure;
 the existing render test, timeout and failure gate remain unchanged.
+
+### Targeted correctness review corrections
+
+On reviewed head `b446821`, candidate canonicalization already used its default
+`sets=false`: the exact `a-root: /`, `z-api: /api`, `/api/users` reproduction
+selected `/api`. New tests preserve that observed fact rather than attributing
+an unobserved array resort to that commit. Canonicalization now passes `false`
+explicitly, and the matcher independently selects the longest prefix instead
+of relying on the first match. A reordered candidate array reproduced the
+previous matcher weakness. Adversarial names cover root, `/api`, `/api/v2`,
+segment boundaries, both strip settings and stable bytes/hash under input and
+object-key reordering. Serialized candidate routes must retain precedence order.
+
+Additional negative tests reproduced same-owner root/nested bindings split
+across gateways with valid host/deployment references. Validation now rejects
+them; a registry regression confirms unchanged committed bytes and generation
+on rejection, and successful authorized whole-hostname migration with unrelated
+routes retained. Scoped binding references replace the ambiguous bare name in
+the draft output and its type declaration; this intentionally changes candidate
+body hashes. Equivalent reordered input still produces identical bytes/planId.
+Previously saved split-gateway snapshots now fail validation; they require
+explicit operator reconciliation, with no automatic state rewrite. Registry
+locking, CAS, atomic persistence and authorization code are unchanged.
+
+Correction verification: 65 edge tests passed with zero failures/skips, including
+the existing interruption/concurrency/authorization tests; 105 architecture tests
+and 10 module manifest checks also passed, as did diff whitespace validation.
+Independent targeted review passed all 65 edge tests and found no blockers.
+Hosted ordinary CI results are reported separately in PR #17. No ES1/ES2 contracts or drivers,
+dependencies, frontend, infrastructure or runtime workflow were changed.
 
 No ES3 runtime acceptance is claimed. ES3-B's exact next task is a separately
 reviewed Caddy adapter with trusted ownership-checked resolution of logical
