@@ -55,6 +55,8 @@ test('offline edge tests use native discovery and run in both architecture CI op
   const job = pipeline.split('  architecture-guardrails:')[1]?.split('  spring-api-tests:')[0] ?? '';
   assert.match(job, /os: \[ubuntu-latest, windows-latest\]/);
   assert.match(job, /run: npm run edge:test/);
+  assert.ok(job.indexOf('run: npm run edge:test') < job.indexOf('run: npm run compose:test'),
+    'offline edge evidence must be available even when the Docker client render step fails');
 });
 
 test('CI and local quality gates run the real env-aware infrastructure tests', async () => {

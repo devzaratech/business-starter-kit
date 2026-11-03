@@ -47,11 +47,11 @@ jobs:
       - name: Run declaration validation and dry-run tests
         run: npm run declarations:test
 
-      - name: Run isolated Compose planning and local admission tests
-        run: npm run compose:test
-
       - name: Run offline shared-edge route registry tests
         run: npm run edge:test
+
+      - name: Run isolated Compose planning and local admission tests
+        run: npm run compose:test
 
       - name: Validate architecture manifests and dependency rules
         run: npm run architecture:check

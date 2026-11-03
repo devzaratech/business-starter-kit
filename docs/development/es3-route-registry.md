@@ -220,6 +220,17 @@ execution remains a separate ordinary CI result. Docker render/runtime tests
 and live proxy validation were not executed locally; no ES3 runtime evidence
 is inferred from these tests.
 
+First hosted [ordinary CI run 41558939116](https://github.com/devzaratech/business-starter-kit/actions/runs/41558939116)
+at `5236c0b` passed Ubuntu architecture/declaration/Compose/edge/manifests,
+workspace/build, Spring and infrastructure jobs. Windows architecture and
+declarations passed, but the unchanged ES2 `render.test.mjs` test failed with
+`spawnSync docker ETIMEDOUT` at its 20-second timeout (132 other ES2 tests passed).
+The later Windows edge/manifests and aggregate quality gate were skipped.
+SonarQube's optional scan was configuration-skipped. The run remains failed.
+The new edge step is now placed before Compose, with an ordering regression,
+so its Windows evidence is independent of this Docker-client render failure;
+the existing render test, timeout and failure gate remain unchanged.
+
 No ES3 runtime acceptance is claimed. ES3-B's exact next task is a separately
 reviewed Caddy adapter with trusted ownership-checked resolution of logical
 upstreams to admitted ingress attachments, candidate rendering/config validation,
