@@ -7,6 +7,7 @@ import { Inventory } from '../lib/inventory.mjs';
 import { DockerReader } from '../lib/docker.mjs';
 import { verifyShutdown } from './shutdown.mjs';
 import { runLabelDrift, labelDriftGap } from './label-drift.mjs';
+import { SyntheticSecrets, secretGap, grantSyntheticReferences, acceptSyntheticSecrets } from './synthetic-secrets.mjs';
 import { expectedObjects, inspectLimits, planLifecycle } from '../lib/lifecycle.mjs';
 import { requireThat, assertEngine, resultStatus } from './guard.mjs';
 import { DockerSession } from './session.mjs';
@@ -22,7 +23,7 @@ export class Harness {
   constructor(permit, session = new DockerSession(permit)) {
     this.permit = permit; this.docker = session; this.checks = []; this.aux = []; this.plans = [];
     this.gaps = [
-      'Secret refs have no backend in the merged driver; positive secret-ref acceptance remains unimplemented.',
+      secretGap,
       labelDriftGap
     ];
   }
@@ -81,7 +82,8 @@ export class Harness {
     this.authorization = { context: d.context, endpoint: d.endpoint, engineId: inner.ID, hostRef: 'disposable-host', disposable: true,
       authorizationRef: `github-actions:${run}:${this.permit.actor}:${this.permit.commit}` };
     this.reader = new DockerReader(this.authorization, args =>
-      args[0] === '--context' && args[2] === 'compose' ? d.inner(args.slice(2)).stdout : d.raw(args).stdout);
+      args[0] === '--context' && args[2] === 'compose' ? d.inner(args.slice(2)).stdout : d.raw(args).stdout,
+      (plan, service, mount) => this.syntheticSecrets?.verify(plan, service, mount) === true);
     this.save('authorization', this.authorization);
     return { outerEngineId: info.ID, innerEngineId: inner.ID, context: d.context, cgroup: inner.CgroupVersion,
       engine: inner.ServerVersion, kernel: inner.KernelVersion, cgroupDriver: inner.CgroupDriver, runner: 'ubuntu-24.04',
@@ -121,6 +123,7 @@ export class Harness {
   }
   claim() {
     const f = fixtures(this.permit.run, this.imageRef);
+    grantSyntheticReferences(f);
     this.store = Inventory.initialize(join(this.root, 'inventory'), f.host);
     f.requests.forEach((r, i) => { this.store.claim(r, i); });
     this.plans = f.requests.map(buildPlan);
@@ -156,6 +159,10 @@ export class Harness {
     return { data, http };
   }
   async deploy() {
+    if (this.plans.some(plan => plan.compose.secrets)) {
+      this.syntheticSecrets = new SyntheticSecrets(this);
+      this.syntheticSecrets.prepare(this.plans);
+    }
     for (let i = 0; i < this.plans.length; i++) {
       const p = this.plans[i];
       this.docker.inner(['compose', '-p', p.scope, '-f', `/run/bsk/compose-${i}.json`, 'up', '-d', '--pull', 'never', '--wait', '--wait-timeout', '30'], { timeout: 60000 });
@@ -215,7 +222,18 @@ export class Harness {
     const storageStore = Inventory.initialize(join(this.root, 'negative-storage'), unsupported); let storage;
     try { storageStore.claim(f.requests[0], 0); } catch (e) { storage = e.code; } requireThat(storage === 'CAPABILITY', 'ADMISSION');
     const bad = structuredClone(f.requests[0]); bad.workloads[0].privileged = true;
-    return { rolloutOverlap: deny(conflict, 'IDENTITY_CONFLICT'), rawPrivilege: deny(bad, 'SCHEMA'), capacity, storage };
+    const secretDenials = [];
+    for (const mode of ['missing', 'foreign', 'ambiguous', 'unauthorized', 'malformed']) {
+      const invalid = structuredClone(f.requests[0]); const binding = invalid.secretProvider.bindings[0];
+      if (mode === 'missing') binding.ref = 'missing';
+      if (mode === 'foreign') binding.projectRef = 'foreign';
+      if (mode === 'ambiguous') invalid.secretProvider.bindings.push({ ...binding });
+      if (mode === 'unauthorized') invalid.secretProvider.kind = 'host';
+      if (mode === 'malformed') binding.ref = '../secret';
+      let code; try { buildPlan(invalid); } catch (e) { code = e.code; }
+      requireThat(['SECRET_REFERENCE', 'SCHEMA'].includes(code), 'SECRET_NEGATIVE'); secretDenials.push({ mode, code });
+    }
+    return { rolloutOverlap: deny(conflict, 'IDENTITY_CONFLICT'), rawPrivilege: deny(bad, 'SCHEMA'), capacity, storage, secretDenials };
   }
   ownershipNegatives() {
     const a = this.plans[0]; const evidence = [];
@@ -255,6 +273,11 @@ export class Harness {
   }
   async cleanup() {
     const errors = [];
+    if (this.syntheticSecrets?.ready) {
+      try {
+        this.syntheticSecrets.audit(this.plans, JSON.stringify({ plans: this.plans, inventory: this.store.snapshot(), commands: this.docker.commands, checks: this.checks }));
+      } catch { errors.push({ code: 'SECRET_AUDIT' }); }
+    }
     if (this.labelDriftPending) errors.push({ code: 'DRIFT_PARTIAL_CREATION' });
     // Cleanup never invokes Compose down, force removal, wildcard deletion or prune.
     for (const p of this.plans) for (const expected of expectedObjects(p)) {
@@ -270,6 +293,9 @@ export class Harness {
     let daemonUnavailableRejection = null;
     const shutdownEvidence = [];
     try {
+    if (!errors.length && this.syntheticSecrets) {
+      try { this.syntheticSecrets.cleanup(this.plans); } catch { errors.push({ code: 'SECRET_CLEANUP' }); }
+    }
     if (!errors.length && this.reader && this.outerContainer && this.plans.length > 0) {
       this.docker.inspect(this.outerContainer, true);
       this.docker.outer(['container', 'stop', '--time', '5', this.outerContainer.id]);
@@ -299,6 +325,7 @@ export class Harness {
       const f = await this.check('atomic-inventory', () => this.claim());
       await this.check('admission-negatives', () => this.admission(f));
       await this.check('ownership-topology-and-cgroup-limits', () => this.deploy());
+      await this.check('scoped-secret-references', () => acceptSyntheticSecrets(this));
       await this.check('version-evidence', () => {
         const versions = { ...this.reader.versions(this.plans[0]), images,
           python: this.python(this.recordFor(this.plans[0], 'http'), 'import sys; print(sys.version)').stdout.trim() };
@@ -317,9 +344,9 @@ export class Harness {
     finally {
       await this.check('verified-cleanup', () => this.cleanup()).catch(() => {});
       const required = ['bootstrap', 'immutable-synthetic-image', 'atomic-inventory', 'admission-negatives', 'ownership-topology-and-cgroup-limits',
-        'version-evidence', 'private-network-denials', 'bounded-load-enforcement', 'ownership-and-daemon-rejections', 'stop-down-project-and-data-isolation', 'expected-resource-label-drift', 'verified-cleanup'];
+        'scoped-secret-references', 'version-evidence', 'private-network-denials', 'bounded-load-enforcement', 'ownership-and-daemon-rejections', 'stop-down-project-and-data-isolation', 'expected-resource-label-drift', 'verified-cleanup'];
       for (const name of required) if (!this.checks.some(c => c.name === name)) this.checks.push({ name, status: 'blocked', code: 'PREREQUISITE' });
-      if (this.checks.every(c => c.status === 'passed')) this.gaps = this.gaps.filter(gap => gap !== labelDriftGap);
+      if (this.checks.every(c => c.status === 'passed')) this.gaps = this.gaps.filter(gap => gap !== labelDriftGap && gap !== secretGap);
       this.save('commands', this.docker.commands);
       this.save('results', { commit: this.permit.commit, run: this.permit.run, checks: this.checks, remainingAcceptanceGaps: this.gaps,
         conformance: resultStatus(this.checks, this.gaps), completedAt: new Date().toISOString() });

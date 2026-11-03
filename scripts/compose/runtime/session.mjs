@@ -10,10 +10,10 @@ export class DockerSession {
   constructor(permit, transport = (args, options) => spawnSync('docker', args, options)) {
     this.permit = permit; this.transport = transport; this.commands = [];
   }
-  raw(args, { timeout = 15000, allowFailure = false } = {}) {
+  raw(args, { timeout = 15000, allowFailure = false, input } = {}) {
     requireThat(Number.isInteger(timeout) && timeout > 0 && timeout <= 180000, 'TIMEOUT');
     const r = this.transport(args, { timeout, shell: false, encoding: 'utf8', maxBuffer: 4 * 1024 * 1024,
-      env: cleanEnvironment(process.env) });
+      env: cleanEnvironment(process.env), ...(input === undefined ? {} : { input }) });
     this.commands.push({ argv: ['docker', ...args], exit: r.status, error: r.error?.code ?? null,
       stdoutSha256: createHash('sha256').update(r.stdout ?? '').digest('hex') });
     this.onCommand?.(this.commands);

@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import { expectedObjects } from './lifecycle.mjs';
 import { fail, scopeName } from './plan.mjs';
+import { validateSecretMount } from './secrets.mjs';
 
 function execute(args) {
   const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !/^(DOCKER_|COMPOSE_)/i.test(k)));
@@ -10,7 +11,7 @@ function execute(args) {
 }
 
 export class DockerReader {
-  constructor(authorization, run = execute) {
+  constructor(authorization, run = execute, verifySecretSource) {
     const a = authorization;
     const path = typeof a?.endpoint === 'string' ? a.endpoint.slice('unix://'.length) : '';
     if (!a || Object.keys(a).sort().join(',') !== ['context', 'endpoint', 'engineId', 'hostRef', 'disposable', 'authorizationRef'].sort().join(',') ||
@@ -18,7 +19,7 @@ export class DockerReader {
       !/^unix:\/\/\/[a-zA-Z0-9_./-]+$/.test(a.endpoint) || path.slice(1).split('/').some(s => !s || s === '.' || s === '..') ||
       /^unix:\/\/\/(?:var\/)?run\/docker\.sock$|desktop|docker_engine/i.test(a.endpoint) ||
       ![a.engineId, a.hostRef, a.authorizationRef].every(v => typeof v === 'string' && v.length > 0 && v.length <= 256)) fail('CONTEXT_REQUIRED');
-    this.authorization = structuredClone(a); this.run = run;
+    this.authorization = structuredClone(a); this.run = run; this.verifySecretSource = verifySecretSource;
   }
   call(args) {
     try { return this.run(args); } catch { fail('DOCKER_READ'); }
@@ -56,12 +57,21 @@ export class DockerReader {
         if (kind === 'container') {
           const h = o.HostConfig; const n = o.NetworkSettings;
           if (!h || !n || !Array.isArray(o.Mounts)) fail('DOCKER_READ');
+          const secretMounts = [];
+          const mounts = o.Mounts.map(m => {
+            if (m.Type === 'volume') return m.Name;
+            if (plan.compose.services[o.Config?.Labels?.['dev.bsk.service']]?.secrets?.length && m.Type === 'bind') {
+              secretMounts.push(validateSecretMount(plan, o.Config?.Labels?.['dev.bsk.service'], m, this.verifySecretSource));
+              return null;
+            }
+            return `unmanaged:${m.Type}`;
+          }).filter(m => m !== null);
           objects.push({ kind, id, name: o.Name?.replace(/^\//, ''), labels: o.Config?.Labels ?? {},
             limits: { cpuMillis: h.NanoCpus > 0 ? h.NanoCpus / 1000000 : h.CpuQuota > 0 && h.CpuPeriod > 0 ? h.CpuQuota / h.CpuPeriod * 1000 : null,
               memoryBytes: h.Memory ?? null, pids: h.PidsLimit ?? null },
             privileged: h.Privileged, hostNetwork: h.NetworkMode === 'host', networks: Object.keys(n.Networks ?? {}),
             ports: Object.values(n.Ports ?? {}).flatMap(p => p ?? []),
-            mounts: o.Mounts.map(m => m.Type === 'volume' ? m.Name : `unmanaged:${m.Type}`) });
+            mounts, ...(secretMounts.length ? { secretMounts } : {}) });
         } else objects.push({ kind, id, name: o.Name, labels: o.Labels ?? {},
           ...(kind === 'network' ? { internal: o.Internal, driver: o.Driver, attachments: Object.keys(o.Containers ?? {}) } : {}) });
       }

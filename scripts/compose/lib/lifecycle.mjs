@@ -1,4 +1,5 @@
 import { labels, hash, fail } from './plan.mjs';
+import { secretMounts } from './secrets.mjs';
 
 const compare = (a, b) => a < b ? -1 : a > b ? 1 : 0;
 
@@ -31,6 +32,9 @@ export function inspectLimits(entry, objects) {
     const s = p.compose.services[e.service];
     const networkNames = s.networks.map(n => p.compose.networks[n].name).sort();
     const volumes = (s.volumes ?? []).map(v => p.compose.volumes[v.source].name).sort();
+    const approvedSecrets = secretMounts(p, e.service);
+    const actualSecrets = [...(o.secretMounts ?? [])].sort((a, b) => compare(a.target, b.target));
+    if (JSON.stringify(actualSecrets) !== JSON.stringify(approvedSecrets.sort((a, b) => compare(a.target, b.target)))) fail('RUNTIME_POLICY');
     if (o.privileged !== false || o.hostNetwork !== false || !Array.isArray(o.ports) || o.ports.length ||
       JSON.stringify([...o.networks].sort()) !== JSON.stringify(networkNames) ||
       JSON.stringify([...o.mounts].sort()) !== JSON.stringify(volumes)) fail('RUNTIME_POLICY');
