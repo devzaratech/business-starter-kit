@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import Ajv2020 from 'ajv/dist/2020.js';
 import { validateBundle } from '../../declarations/lib/validate.mjs';
+import { secretKey } from './secrets.mjs';
 
 const declarationSchema = JSON.parse(readFileSync(new URL('../../../contracts/schemas/bsk-declaration-v0alpha1.schema.json', import.meta.url)));
 const schema = JSON.parse(readFileSync(new URL('../../../contracts/schemas/bsk-compose-v0alpha1.schema.json', import.meta.url)));
@@ -51,6 +52,7 @@ export function buildPlan(input) {
   const workloads = structuredClone(input.workloads).sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
   if (new Set(workloads.map(w => w.name)).size !== workloads.length) fail('DUPLICATE');
   const httpRefs = new Set();
+  const usedBindings = new Set();
   for (const w of workloads) {
     const r = w.resources;
     if (r.cpuRequestMillis > r.cpuLimitMillis || r.memoryRequestBytes > r.memoryLimitBytes) fail('RESOURCE_BOUNDS');
@@ -62,11 +64,21 @@ export function buildPlan(input) {
       if (!svc) fail('REFERENCE');
       if (httpRefs.has(w.serviceRef)) fail('DUPLICATE');
       httpRefs.add(w.serviceRef);
-      if (svc.spec.secretRefs?.length) fail('SECRETS_UNSUPPORTED');
+      if (svc.spec.secretRefs?.length) {
+        if (!input.secretProvider) fail('SECRETS_UNSUPPORTED');
+        w.secretRefs = [...svc.spec.secretRefs].sort();
+        for (const ref of w.secretRefs) {
+          const matches = input.secretProvider.bindings.filter(b => b.installationRef === t.installationRef && b.projectRef === t.projectRef &&
+            b.environmentRef === t.environmentRef && b.serviceRef === w.serviceRef && b.ref === ref);
+          if (matches.length !== 1) fail('SECRET_REFERENCE');
+          usedBindings.add(matches[0]);
+        }
+      }
       if (svc.spec.resources && hash(svc.spec.resources) !== hash(r)) fail('RESOURCE_BOUNDS');
       w.port = svc.spec.port;
     }
   }
+  if (input.secretProvider && usedBindings.size !== input.secretProvider.bindings.length) fail('SECRET_REFERENCE');
   const usage = sumUsage(workloads, false);
   const requested = sumUsage(workloads, true);
   if (workloads.reduce((n, w) => n + w.resources.replicas, 0) > 1000) fail('DRIVER_LIMIT');
@@ -82,6 +94,14 @@ export function buildPlan(input) {
       logging: { driver: 'json-file', options: { 'max-size': '10m', 'max-file': '3' } }
     };
     if (w.role === 'http') service.expose = [String(w.port)];
+    if (w.secretRefs?.length) {
+      compose.secrets ??= {};
+      service.secrets = w.secretRefs.map(ref => {
+        const key = secretKey(w.name, ref);
+        compose.secrets[key] = { file: `/run/bsk-fixture-secrets/${scope}/${key}` };
+        return { source: key, target: ref };
+      });
+    }
     if (w.persistent) {
       const key = `data-${w.name}`;
       compose.volumes[key] = { name: `${scope}-${key}`, labels: labels(t, scope, w.name) };

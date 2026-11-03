@@ -7,6 +7,52 @@
   "properties": {
     "apiVersion": { "const": "bsk.compose/v0alpha1" },
     "declarations": { "$ref": "https://business-starter-kit.dev/schemas/bsk-declaration-v0alpha1.schema.json" },
+    "secretProvider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "bindings"
+      ],
+      "properties": {
+        "kind": {
+          "const": "disposable-synthetic"
+        },
+        "bindings": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "installationRef",
+              "projectRef",
+              "environmentRef",
+              "serviceRef",
+              "ref"
+            ],
+            "properties": {
+              "installationRef": {
+                "$ref": "#/$defs/slug"
+              },
+              "projectRef": {
+                "$ref": "#/$defs/slug"
+              },
+              "environmentRef": {
+                "$ref": "#/$defs/slug"
+              },
+              "serviceRef": {
+                "$ref": "#/$defs/slug"
+              },
+              "ref": {
+                "$ref": "#/$defs/slug"
+              }
+            }
+          }
+        }
+      }
+    },
     "target": {
       "type": "object", "additionalProperties": false,
       "required": ["installationRef", "projectRef", "environmentRef", "hostRef", "deploymentRef"],

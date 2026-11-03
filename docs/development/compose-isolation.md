@@ -1,5 +1,10 @@
 # Opt-in Compose isolation and local resource admission (PR2a / ES2)
 
+SecretRef follow-up: [scoped disposable synthetic references](es2-scoped-secret-references.md)
+adds explicit fixture-only opt-in resolution. Nonempty references still reject
+by default. Earlier limitations below describe the original PR2a baseline;
+positive runtime acceptance of the follow-up is not yet claimed.
+
 This additive driver can render owned Compose models, reserve local capacity,
 inspect an authorized disposable Docker target and prepare guarded lifecycle
 intentions. **It does not execute Docker mutations. ES2 runtime conformance is
