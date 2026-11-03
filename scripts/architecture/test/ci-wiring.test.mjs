@@ -48,6 +48,15 @@ test('architecture:test uses native discovery without shell wildcard expansion',
   assert.equal(pkg.scripts['architecture:test'], 'cd scripts/architecture && node --test');
 });
 
+test('offline edge tests use native discovery and run in both architecture CI operating systems', async () => {
+  const pkg = JSON.parse(await readFile(new URL('../../../package.json', import.meta.url), 'utf8'));
+  assert.equal(pkg.scripts['edge:test'], 'cd scripts/edge && node --test');
+  const pipeline = await readFile(new URL('../../../.github/workflows/ci.yml', import.meta.url), 'utf8');
+  const job = pipeline.split('  architecture-guardrails:')[1]?.split('  spring-api-tests:')[0] ?? '';
+  assert.match(job, /os: \[ubuntu-latest, windows-latest\]/);
+  assert.match(job, /run: npm run edge:test/);
+});
+
 test('CI and local quality gates run the real env-aware infrastructure tests', async () => {
   const root = fileURLToPath(new URL('../../../', import.meta.url));
   const pkg = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
