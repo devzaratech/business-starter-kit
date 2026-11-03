@@ -18,6 +18,17 @@ Admit its limits against host reserves plus retained primary-project claims,
 using a separate test-only local inventory and explicit budgets.
 
 Apply its generated Compose topology with additional harness ownership tags.
+Compose creates the worker and data bridge but omits the unused ingress bridge.
+After Compose succeeds, list network names through the pinned inner Docker
+session and reject any existing exact ingress name, regardless of its labels.
+Create only that expected ingress as an internal bridge with the generated BSK
+labels, Compose project label and run/role tags. Verify the returned 64-hex ID,
+all ownership labels, exact name, internal/bridge topology and no attachments.
+Register that inspected ID for auxiliary cleanup before reading the complete
+baseline; do not register it twice. Persist its ID, labels and verified topology
+in `label-drift-ingress.json`. Creation, inspection or baseline uncertainty keeps
+the pending flag set, blocking outer sandbox disposal even if registered
+resources can be removed safely. An existing network is never adopted or removed.
 Read actual resources through the unchanged DockerReader and require a passing
 ownership/configuration baseline. Register actual IDs/full labels for cleanup.
 
@@ -60,8 +71,36 @@ cases, counts, changed key, repair proof, lifecycle rejection and retained objec
 No secrets or raw daemon errors are added. The new check is required; failure or
 missing execution remains failed/blocked. Only when **all implemented runtime
 checks, including final cleanup, pass** does the run remove the label-drift gap
-from its result. Positive secret-reference acceptance remains unimplemented and
-keeps ES2 conformance incomplete. Historical artifacts are never rewritten.
+from its result. At original preparation, positive secret-reference acceptance
+was also unimplemented. Historical artifacts are never rewritten.
+
+## Unused ingress correction after run 41553676072
+
+[Authorized run 41553676072](https://github.com/devzaratech/business-starter-kit/actions/runs/41553676072)
+passed scoped SecretRefs for both projects and the existing isolation, resource
+and lifecycle checks. Expected-resource label drift failed `DOCKER_READ` before
+either mutation: Compose left its unused ingress network absent, but DockerReader
+correctly required all three expected resources. Verified cleanup then failed
+`CLEANUP_INCOMPLETE`; `DRIFT_PARTIAL_CREATION` correctly prevented unsafe disposal.
+That run remains failed; its positive evidence does not prove label drift.
+
+The correction is prepared on main `7981fd2c28d58ad2c577e81124faf7c85390f3d6`.
+The Compose mock now omits unused ingress, reproducing `DOCKER_READ` before the
+fix. Local verification after the fix: 132 non-destructive ES2 tests passed,
+104 architecture tests passed, and 10 module manifests validated; no failures
+or skips in those runs. The Docker-client render test was excluded to avoid
+local Docker access. Regression cases cover successful creation and both label
+mutations, an existing foreign name, creation failure, invalid returned ID,
+wrong labels/name/topology, unexpected attachments and baseline read failure
+after safe registration. The last case retains pending uncertainty despite
+having a verified cleanup record. Existing cleanup tests confirm pending
+uncertainty prevents outer disposal. Diff whitespace validation passed.
+
+These tests use mocks and do not establish runtime acceptance. No local Docker,
+VPS or workflow execution was performed. Runtime acceptance remains pending a
+separate owner-authorized disposable workflow on the reviewed, merged code;
+obtain the new main SHA before authorization. No reader, ownership evaluator,
+SecretRef implementation or primary-project fixture was changed.
 
 ## Local verification and review boundary
 
@@ -71,7 +110,7 @@ They first failed for the missing module, then passed after implementation.
 These are mocks, not runtime evidence. Existing reader/lifecycle tests and
 architecture guardrails are run without Docker daemon access; the real Compose
 client render test is excluded locally to honor the no-local-Docker boundary.
-Actual local results: 112 ES2 tests passed (all test files except the Docker
+Original local results: 112 ES2 tests passed (all test files except the Docker
 client render test), 104 architecture tests passed and 10 manifests validated.
 The nine new tests include partial-creation failure and suppression of outer
 disposal. Independent focused security review found no blocking issue and

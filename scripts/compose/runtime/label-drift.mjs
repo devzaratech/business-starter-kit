@@ -41,9 +41,25 @@ export async function runLabelDrift(h) {
   h.save('label-drift-plan', plan);
   h.labelDriftPending = true;
   h.docker.inner(['compose', '-p', plan.scope, '-f', '/run/bsk/compose-label-drift.json', 'up', '-d', '--pull', 'never', '--wait', '--wait-timeout', '30'], { timeout: 60000 });
+  // Compose omits unused networks; this worker-only fixture still expects ingress.
+  const ingress = plan.compose.networks.ingress;
+  const names = h.docker.inner(['network', 'ls', '--format', '{{.Name}}']).stdout.trim().split('\n');
+  requireThat(!names.includes(ingress.name), 'DRIFT_NETWORK_EXISTS');
+  const ingressLabels = { ...ingress.labels, ...tags, 'com.docker.compose.project': plan.scope };
+  const create = ['network', 'create', '--internal', '--driver', ingress.driver];
+  for (const [k, v] of Object.entries(ingressLabels)) create.push('--label', `${k}=${v}`);
+  const ingressId = h.docker.inner([...create, ingress.name]).stdout.trim();
+  requireThat(/^[a-f0-9]{64}$/.test(ingressId), 'DRIFT_ID');
+  const ingressRecord = { kind: 'network', id: ingressId, labels: ingressLabels };
+  const actualIngress = h.docker.inspect(ingressRecord);
+  requireThat(actualIngress.Name === ingress.name && actualIngress.Internal === ingress.internal &&
+    actualIngress.Driver === ingress.driver && Object.keys(actualIngress.Containers ?? {}).length === 0, 'DRIFT_NETWORK_TOPOLOGY');
+  h.aux.push(ingressRecord);
+  h.save('label-drift-ingress', { name: ingress.name, ...ingressRecord, internal: actualIngress.Internal, driver: actualIngress.Driver });
   const initial = h.reader.resources(plan); requireThat(inspectLimits(entry, initial).configurationMatches, 'DRIFT_BASELINE');
   // Register networks first so reverse-order cleanup removes their container first.
   for (const o of [...initial].sort((a, b) => (a.kind === 'container') - (b.kind === 'container'))) {
+    if (o.kind === 'network' && o.id === ingressId) continue;
     const record = { kind: o.kind, id: o.id, labels: { ...o.labels, ...tags } };
     h.docker.inspect(record); h.aux.push(record);
   }
