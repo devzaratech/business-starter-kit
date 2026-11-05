@@ -16,6 +16,40 @@ import { hash } from '../lib/model.mjs';
 const render = f => renderCaddy(f.candidate, { snapshot: f.snapshot, runtime: f.runtime });
 const server = result => result.config.apps.http.servers.bsk;
 
+test('every public route scrubs the exact untrusted forwarding families before proxy preparation', () => {
+  const result = render(caddyFixture());
+  const policy = { handler: 'headers', request: { delete: ['Forwarded*', 'X-Forwarded*', 'X-Real-*', 'Cf-*', 'True-Client-*', 'Via'] } };
+  const publicRoutes = server(result).routes.filter(r => r.match);
+  assert.ok(publicRoutes.length > 0);
+  for (const route of publicRoutes) {
+    assert.deepEqual(route.handle[0], policy);
+    assert.equal(route.handle.filter(h => h.handler === 'headers').length, 1);
+    assert.equal(route.handle.at(-1).handler, 'reverse_proxy');
+    assert.ok(route.handle.slice(1, -1).every(h => h.handler === 'rewrite'));
+  }
+});
+
+test('the emitted proxy policy leaves Caddy-generated forwarding metadata without post-generation overrides', () => {
+  const result = render(caddyFixture());
+  assert.equal(Object.hasOwn(server(result), 'trusted_proxies'), false);
+  for (const route of server(result).routes.filter(r => r.match)) {
+    const proxy = route.handle.at(-1);
+    assert.deepEqual(Object.keys(proxy).sort(), ['handler', 'upstreams']);
+    assert.equal(Object.hasOwn(proxy, 'headers'), false);
+    assert.equal(Object.hasOwn(proxy, 'trusted_proxies'), false);
+  }
+  // These assertions inspect JSON only; they do not send or observe HTTP headers.
+});
+
+test('ES3-A rejects multiple logical HTTP services sharing one deployment reference', () => {
+  const f = caddyFixture();
+  const service = structuredClone(f.snapshot.input.declarations.resources.find(r => r.kind === 'Service' && r.metadata.projectRef === 'alpha'));
+  service.metadata.name = 'other-http'; service.spec.port = 8081; f.snapshot.input.declarations.resources.push(service);
+  const route = structuredClone(f.snapshot.input.routes[0]); route.metadata.name = 'other-service';
+  route.spec.pathPrefix = '/other'; route.spec.serviceRef = 'other-http'; f.snapshot.input.routes.push(route);
+  denies(() => recandidate(f), 'UNRESOLVED_REFERENCE');
+});
+
 test('renders three projects/six public .test hostnames with exact candidate identity and scoped route references', () => {
   const f = caddyFixture(); const before = JSON.stringify(f); const result = render(f);
   assert.equal(result.mode, 'dry-run'); assert.equal(result.candidatePlanId, f.candidate.planId);

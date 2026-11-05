@@ -10,7 +10,7 @@
 
 **Implementation sequence (TDD):**
 
-1. Add synthetic three-project/six-host fixture and failing validation/planner tests in `scripts/edge/test/`; implement `contracts/schemas/bsk-edge-v0alpha1.schema.json` and `scripts/edge/lib/model.mjs` using canonical ES1 schema references and validator projection.
+1. Add a synthetic fixture for three projects and six `.test` hostnames and failing validation/planner tests in `scripts/edge/test/`; implement `contracts/schemas/bsk-edge-v0alpha1.schema.json` and `scripts/edge/lib/model.mjs` using canonical ES1 schema references and validator projection.
 2. Add failing registry tests for CAS, ownership transfer, lock contention, corruption, interrupted persistence and unrelated route retention; implement `scripts/edge/lib/registry.mjs` with no infrastructure imports.
 3. Add pure candidate/matching tests, including segment precedence, strip behavior, private exclusion, input reorder and mutation guards; implement `scripts/edge/lib/plan.mjs` and a typed `IngressDriver` boundary without an adapter.
 4. Wire `edge:test` into the existing Linux/Windows architecture CI job; document usage, trust/recovery boundaries and ES3-B acceptance gaps. Run focused edge, declarations, non-Docker ES2 and architecture checks; review scope and open one PR.

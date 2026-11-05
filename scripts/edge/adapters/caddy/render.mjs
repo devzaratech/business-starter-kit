@@ -1,7 +1,7 @@
 import { canonical, hash } from '../../lib/model.mjs';
 import { resolveComposeUpstreams, verifyCandidate, reject } from './resolve.mjs';
 
-const removedHeaders = ['Forwarded', 'X-Forwarded-For', 'X-Forwarded-Host', 'X-Forwarded-Proto', 'X-Real-Ip', 'Cf-Connecting-Ip', 'True-Client-Ip'];
+const removedHeaders = ['Forwarded*', 'X-Forwarded*', 'X-Real-*', 'Cf-*', 'True-Client-*', 'Via'];
 
 /** Offline, fixed-template Caddy JSON; never loads, starts or reloads a proxy.
  * @param {import('../../lib/ports.d.ts').IngressCandidate} value
@@ -16,13 +16,14 @@ export function renderCaddy(value, options) {
   for (const [i, r] of candidate.desired.routes.entries()) {
     const endpoints = resolved[i].endpoints;
     endpoints.forEach(e => networks.set(e.networkId, { id: e.networkId, name: e.networkName }));
-    const proxy = { handler: 'reverse_proxy', upstreams: endpoints.map(e => ({ dial: `${e.ipv4}:${e.port}` })),
-      headers: { request: { delete: [...removedHeaders] } } };
+    const proxy = { handler: 'reverse_proxy', upstreams: endpoints.map(e => ({ dial: `${e.ipv4}:${e.port}` })) };
     const indexes = [];
     const emit = (pattern, rewrite) => {
       indexes.push(routes.length);
       routes.push({ match: [{ host: [r.hostname], path_regexp: { pattern } }],
-        handle: [...(rewrite ? [rewrite] : []), structuredClone(proxy)], terminal: true });
+        // Scrub before proxy preparation; proxy-level deletion would erase Caddy's own metadata.
+        handle: [{ handler: 'headers', request: { delete: [...removedHeaders] } },
+          ...(rewrite ? [rewrite] : []), structuredClone(proxy)], terminal: true });
     };
     // ES1 accepts only literal segment characters. No regex or placeholders enter here.
     // Generated RE2 patterns preserve case-sensitive ES3-A semantics unlike Caddy's path matcher.

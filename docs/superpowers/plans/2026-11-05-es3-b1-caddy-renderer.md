@@ -10,7 +10,7 @@
 
 **Steps (TDD):**
 
-1. Add synthetic three-project/six-host adapter fixtures and failing resolution/render tests, including adversarial names, exact/nested stripping, candidate tampering, resource ownership drift, unsafe endpoints and side-effect guards.
+1. Add synthetic adapter fixtures for three projects and six `.test` hostnames on one host, with failing resolution/render tests including adversarial names, exact/nested stripping, candidate tampering, resource ownership drift, unsafe endpoints and side-effect guards.
 2. Implement candidate verification and the pure trusted Compose resolution boundary using existing inward ES1/ES2/ES3-A contracts without modifying their schemas or security evaluators.
 3. Render deterministic JSON with explicit segment path matchers, precedence ordering, fixed reverse-proxy handlers, scoped route metadata and a separate render identity. Preserve candidate plan/generation/target; no applied/observed success.
 4. Run new tests via existing `edge:test` native discovery and Linux/Windows CI, add an architecture wiring guard, document trust limits/usage and exact ES3-B2 work. Run focused edge, ES2 non-Docker, declaration and architecture checks, obtain independent review, then publish one PR without merging or runtime dispatch.
