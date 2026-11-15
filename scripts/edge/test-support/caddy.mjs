@@ -33,7 +33,8 @@ export function caddyFixture() {
   }
   const runtime = { apiVersion: 'bsk.caddy.runtime/v0alpha1', candidatePlanId: candidate.planId, registryGeneration: candidate.registryGeneration,
     target: { installationRef: input.installationRef, gatewayRef: 'edge', hostRef: 'host-a' }, engineRef: 'synthetic-pinned-engine', deployments };
-  return { snapshot, candidate, runtime };
+  const inventory = { version: 1, host: h, revision: previous.length, entries: previous };
+  return { snapshot, candidate, runtime, inventory };
 }
 
 export function recandidate(f) {
