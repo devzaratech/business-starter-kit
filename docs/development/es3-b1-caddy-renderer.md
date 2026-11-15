@@ -244,13 +244,14 @@ single-service deployment invariant; they do not verify live HTTP headers.
 
 ## Remaining ES3-B2 work and rollback
 
-ES3-B2 must implement guarded activation as a separate reviewed task: collect
-fresh observations from the explicitly authorized isolated engine; pin host,
-engine, gateway and candidate/generation; verify actual gateway ownership and
-ingress-only attachments; run pinned Caddy configuration validation; stage a
-candidate under the gateway lease/CAS; activate via a protected local boundary;
-probe served routes; persist separate applied/observed generations; retain and
-restore last-known-good configuration on failure, including crash reconciliation.
+The [ES3-B2-A observation and preflight boundary](es3-b2-a-caddy-preflight.md)
+defines the worker ports and checks injected runtime evidence against the pinned
+scope before and after validation. ES3-B2-B must wire those ports to the
+authorized engine and validator, verify actual gateway ownership and ingress-only
+gateway attachments, and stage the candidate under the gateway lease/CAS.
+Activate via a protected local boundary, probe served routes and persist
+separate applied/observed generations. Retain and restore last-known-good
+configuration on failure, including crash reconciliation.
 Never activate this dry-run result solely because it has a digest.
 
 Independent owner-authorized disposable-runtime acceptance must prove six `.test` hostnames
